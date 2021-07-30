@@ -1,4 +1,4 @@
-# yumi
+# yumi (Work in progress!)
 ROS implementation for YuMi control
 
 
