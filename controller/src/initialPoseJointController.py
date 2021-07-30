@@ -2,7 +2,7 @@
 
 # this controller meant to put the robot in a good initial position, both for repeatability and 
 # for avoiding singularities or joint saturation that may occur from a bad intial configuration 
-# when using inverse kinematics controllers. 
+# when using inverse kinematics controllers. This is only a open loop controller. 
 import rospy
 import numpy as np
 from controller.msg import Jacobian_msg
@@ -14,13 +14,9 @@ class InitContoller(object):
         self.updateRate = 50 #Hz also defined in kdl_jacobian 
         self.dT = 1/self.updateRate
         self.jointState = utils.JointState()
-        self.calibrationJointPosition = np.array([0, -130, -135, 30, 0, 40, 0,\
-             0, -130, 135, 30, 0, 40, 0])*np.pi/180
-        self.calTeast = np.array([78.25, -94.37, -82.12, 40.59, -150.00, 86.26, 56.28,
-                                -78.25, -94.37, 82.12, 40.59, 150.00, 86.26, -56.28])*np.pi/180
+
         self.finalJointPosition = np.array([0.7, -1.7, -0.8, 1.0, -2.2, 1.0, 0.0, -0.7, -1.7, 0.8, 1.0, 2.2, 1.0, 0.0]) # need to be tuned
-        #self.finalJointPosition = self.calibrationJointPosition
-        #self.finalJointPosition = self.calTeast
+
         self.startJointPosition = np.zeros(14) 
         self.k = 0 # positon error gain  
         self.firstDataPoint = 0
