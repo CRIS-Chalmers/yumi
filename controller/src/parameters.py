@@ -40,9 +40,9 @@ class Paramters():
 
     # Gain for absolute control 
     k_p_a = 2 # Gain for positional error 
-    k_p_a = 2 # Gain for angular error 
+    k_o_a = 2 # Gain for angular error 
 
     # Gain for ralative control 
     k_p_r = 2 # Gain for positional error 
-    k_p_r = 2 # Gain for angular error 
+    k_o_r = 2 # Gain for angular error 
 

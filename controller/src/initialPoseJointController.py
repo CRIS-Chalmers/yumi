@@ -5,7 +5,7 @@
 # when using inverse kinematics controllers. This is only a open loop controller. 
 import rospy
 import numpy as np
-from controller.msg import Jacobian_msg
+from controller.msg import Kinematics_msg
 from std_msgs.msg import Float64MultiArray, Float64, Int64
 import utils 
 
@@ -18,7 +18,7 @@ class InitContoller(object):
         self.finalJointPosition = np.array([0.7, -1.7, -0.8, 1.0, -2.2, 1.0, 0.0, -0.7, -1.7, 0.8, 1.0, 2.2, 1.0, 0.0]) # need to be tuned
 
         self.startJointPosition = np.zeros(14) 
-        self.k = 0 # positon error gain  
+        self.k = 1 # positon error gain  
         self.firstDataPoint = 0
         self.finalTime = 10 # updates later
         self.minTime = 2
@@ -86,7 +86,7 @@ def main():
 
     initContoller = InitContoller()
     rospy.sleep(0.05)
-    rospy.Subscriber("/Jacobian_R_L", Jacobian_msg, initContoller.callback, queue_size=3)
+    rospy.Subscriber("/Jacobian_R_L", Kinematics_msg, initContoller.callback, queue_size=3)
 
     rospy.spin()
 

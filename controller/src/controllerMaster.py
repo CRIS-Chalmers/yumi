@@ -3,7 +3,7 @@
 import rospy
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64MultiArray, Float64, Int64
-from controller.msg import Jacobian_msg, Trajectory_msg
+from controller.msg import Kinematics_msg, Trajectory_msg
 import numpy as np
 import tf
 from scipy.spatial.transform import Rotation as R_scipy
@@ -310,7 +310,7 @@ def main():
 
     ymuiContoller = YmuiContoller()
     rospy.sleep(0.05) # wait for every thing to initilize 
-    rospy.Subscriber("/Jacobian_R_L", Jacobian_msg, ymuiContoller.callback, queue_size=3)
+    rospy.Subscriber("/Jacobian_R_L", Kinematics_msg, ymuiContoller.callback, queue_size=3)
     rospy.Subscriber("/Trajectroy", Trajectory_msg, ymuiContoller.callbackTrajectory, queue_size=1)
 
     rospy.spin()
