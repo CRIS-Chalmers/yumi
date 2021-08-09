@@ -53,6 +53,7 @@
   <build_depend>roscpp</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>apriltag_ros</build_depend>
+  <build_depend>abb_rws_service_provider</build_depend>
 
   <build_export_depend>geometry_msgs</build_export_depend>
   <build_export_depend>roscpp</build_export_depend>
