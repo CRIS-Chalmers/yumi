@@ -61,7 +61,7 @@ catkin build -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/incl
 ``` 
 
 ## Usage
-There are two ways to start the controller. Either the controller is started through the interface script or each node is started manually. If somthing unexpected happens and the ropbot needs to be stopped, always use the physical emegency button on the ABB flexpendant insead of trying to stop it through the command line. Another important warning, there is no guarante that the HQP and inverse kinematics will find a good solution, so always be prepared and do not run the robot at a greater speed then what you are capable to intervene.  
+There are two ways to start the controller. Either the controller is started through the interface script or each node is started manually. If something unexpected happens and the robot needs to be stopped, always use the physical emergency button on the ABB flexpendant instead of trying to stop it through the command line. Another important warning, there is no guarantee that the HQP and inverse kinematics will find a good solution, so always be prepared and do not run the robot at a greater speed than what you are capable to intervene.  
 
 ### Method 1:
 
@@ -76,18 +76,18 @@ roscore
 ``` 
 rosrun robot_setup_tf Interface.py
 ``` 
-This will launch a very simple comand line interface, were different commands can be entered to start differnet nodes. The interface also gives information about which nodes that are running and what the valid commands are. Importent the arms of the robot are not in the correct place until the simulation or the connection/EGM to the robot is started. For running in simulation type "startSimualtion" and press enter. For running on the real robot assuming that the ethernet is plugged in and the robot is in the correct state (read wiki before attempting this), first type "connectYuMi", this will start the connection but not the EGM conrollers. To start the internal controllers and EGM connection, type "startEGM", once this is active, the robot will follow any velocity commands. To reset the pose type "resetPose", before running this be sure that the robot is not close to anything (such as workspace or objects) as this mode does not handle collision avoidance. Once the robot is in a good position, i.e. after reseting the pose then the main controller can be started with "startController", at this point the robot will follow any trajecory parameters sent to the controller. ShutDown the system, first wait for the robot to not be moving, then type "shutDown". There are other commands to shutDown individual nodes if that is desierd.     
+This will launch a very simple command-line interface, where different commands can be entered to start different nodes. The interface also gives information about which nodes are running and what the valid commands are. Important the arms of the robot are not in the correct place until the simulation or the connection/EGM to the robot is started. For running in simulation type "startSimualtion" and press enter. For running on the real robot assuming that the ethernet is plugged in and the robot is in the correct state (read the wiki before attempting this), first type "connectYuMi", this will start the connection but not the EGM controllers. To start the internal controllers and EGM connection, type "startEGM", once this is active, the robot will follow any velocity commands. To reset the pose type "resetPose", before running this be sure that the robot is not close to anything (such as workspace or objects) as this mode does not handle collision avoidance. Once the robot is in a good position, i.e. after resetting the pose then the main controller can be started with "startController", at this point the robot will follow any trajectory parameters sent to the controller. ShutDown the system, first wait for the robot to not be moving, then type "shutDown". There are other commands to shutDown individual nodes if that is desired.     
 
 ### Method 2:
 
-The second method of starting the contorller is to lanuch all the nodes manually in seperate terminals. This may give the user better control over what is running or to make modifications. It is adviced to read through the wiki before attempting this. 
+The second method of starting the controller is to launch all the nodes manually in separate terminals. This may give the user better control over what is running or to make modifications. It is advised to read through the wiki before attempting this. 
 
-* start yumi_description, this starts the rviz visualization and the robot_state_publisher for visulizing the robot pose, will automatically start a roscore if there isnt one already running.   
+* start yumi_description, this starts the rviz visualization and the robot_state_publisher for visualizing the robot pose, will automatically start a roscore if there isn't one already running.   
 ``` 
 roslaunch yumi_description display.launch
 ``` 
 
-* start tf broadcaster, for seting up transformation tree between the robot and world frame and the wrist to the tip of the grippers. Can be modified to inlcude transformations to camera and other objects.
+* start tf broadcaster, for setting up transformation tree between the robot and world frame and the wrist to the tip of the grippers. Can be modified to include transformations to the camera and other objects.
 ``` 
 rosrun robot_setup_tf tf_broadcaster
 ``` 
@@ -97,28 +97,28 @@ rosrun robot_setup_tf tf_broadcaster
 rosrun controller kdl_kinematics
 ``` 
 
-* For starting a simple simulator, it only acts as a integrator for the joint velocities, but no the less is very useful for testing. 
+* For starting a simple simulator, it only acts as an integrator for the joint velocities, but no the less is very useful for testing. 
 ``` 
 rosrun simulation_rviz yumi_simulator.py
 ``` 
 
-* For robot or robotstudio (warning: this activates egm and joint controllers and also closes egm and rapid when set_yumi_settings_and_start.py is closed) (In our lab, Ip: 192.168.125.1)
+* For robot or robotstudio (warning: this activates EGM and joint controllers and also closes EGM and rapid when set_yumi_settings_and_start.py is closed) (In our lab, Ip: 192.168.125.1)
 ```
 roslaunch abb_robot_bringup_examples ex3_rws_and_egm_yumi_robot.launch robot_ip:=<robot controller's IP address> 
 rosrun robot_setup_tf set_yumi_settings_and_start.py
 ```
 
-* To reset the pose, make sure the robot is in a good configuration before running this one, will automaticallt teminate when it is done. Do not run this at the same time as the controllerMaster. This is a open loop controller, so accuary is only so high. But the main purpose is to make sure that no joints is saturated, which it is sufficent for. 
+* To reset the pose, make sure the robot is in a good configuration before running this one, which will automatically terminate when it is done. Do not run this at the same time as the controllerMaster. 
 ``` 
 rosrun controller initalPoseJointController.py
 ``` 
 
-* Start the controller, it is adviced to run the rest pose contorller before starting this one as it is easy to have the wrist joints saturated otherwise, which could give bad results. When this is started the robot will follow the trajectory paramters sent to it.
+* Start the controller, it is advised to run the rest pose controller before starting this one as it is easy to have the wrist joints saturated otherwise, which could give bad results. When this is started the robot will follow the trajectory parameters sent to it.
 ``` 
 rosrun controller controllerMaster.py
 ``` 
 ### Test
-For testing a script with example trajectories are provided, the trajecory paramters are hard coded in this example but much more advanced planners can be made. 
+For testing a script with example trajectories are provided, the trajectory parameters are hardcoded in this example but much more advanced planners can be made. 
 ``` 
 rosrun example_trajectories test_trajectories.py
 ``` 
