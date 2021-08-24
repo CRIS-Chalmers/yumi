@@ -11,7 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   roscpp
   tf
-  apriltag_ros
   abb_rws_service_provider
 )
 
