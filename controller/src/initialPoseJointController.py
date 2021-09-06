@@ -2,7 +2,7 @@
 
 # this controller meant to put the robot in a good initial position, both for repeatability and 
 # for avoiding singularities or joint saturation that may occur from a bad intial configuration 
-# when using inverse kinematics controllers. This is only a open loop controller. 
+# when using inverse kinematics controllers. 
 import rospy
 import numpy as np
 from controller.msg import Kinematics_msg

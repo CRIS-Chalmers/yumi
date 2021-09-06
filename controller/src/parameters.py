@@ -22,7 +22,7 @@ class Paramters():
 
     # gripper collision avoidance (Only for indiviual motion and not coordinated motion)
     gripperColllsionActive = 1 # 0 for deactivate 
-    gripperMinDinstance = 0.125 # closet allowed disatance in [m]
+    gripperMinDinstance = 0.12 # closet allowed disatance in [m]
 
     # elbow collision avoidance  
     minElbowDistance = 0.2 # closes the elbows can be to each other in [m]
