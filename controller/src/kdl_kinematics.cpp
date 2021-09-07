@@ -148,8 +148,8 @@ class Calc_jacobian{
 
     // joint offset for calibration/tuning [rad], program needs to be recompiled after change!
     // follows joint_name_list, i.e. on the real robot from shoulder to wrist. 
-    std::vector<double> joint_offset = {0.0005, -0.0, -0.00, -0.033, 0.001, 0.02, -0.0,
-                                         0.0, -0.00, -0.0, 0.005, -0.0, 0.0, -0.0};
+    std::vector<double> joint_offset = {-0.0155479, -0.0059908, -0.006814363, -0.02071828, -0.000571185, 0.01696876, 0.0007526933,
+                                         -0.00090386355, -0.0052244536, -0.000945309, 0.006259396, 0.003126351383, 0.0016362062, -0.0004466520};
 
     // egm active for both arms, safety system for if arms not started properly, though doesnt cover everything
     bool egm_active = false;
