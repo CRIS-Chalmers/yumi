@@ -299,7 +299,7 @@ class YmuiContoller(object):
         # update the trajectroy 
         self.controlTarget.trajectory.updateTrajectory(trajectory, velLeftInit, velRightInit)
         self.controlTarget.trajIndex = 0
-
+        self.controlTarget.trajectorySegment = 0
         self.lock.release() 
 
 

@@ -187,11 +187,10 @@ class GripperControl(object):
         try:
             # stacks/set the commands for the grippers 
             # to not sent same command twice. As the grippers momentarly regripps if the same command is sent twice. 
-
             # for left gripper
             if abs(self.lastGripperLeft - gripperLeft) >= tol:
                 if gripperLeft <= 0.1: # if gripper set close to zero then grip in 
-                    self.SetSGCommand(task="T_ROB_L", command=6) 
+                    self.SetSGCommand(task="T_ROB_L", command=6)
                 else: # otherwise move to position 
                     self.SetSGCommand(task="T_ROB_L", command=5, target_position=gripperLeft)
                 self.lastGripperLeft = gripperLeft
@@ -204,7 +203,6 @@ class GripperControl(object):
                     self.SetSGCommand(task="T_ROB_R", command=5, target_position=gripperRight)
 
                 self.lastGripperRight = gripperRight
-            
             # sends of the commandes to the robot
             self.RunSGRoutine()
 

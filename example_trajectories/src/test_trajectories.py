@@ -307,10 +307,9 @@ def main():
 
     pub.publish(msg)
     print('sent msg 3, coordinated ')
-    '''
-    '''
-    rospy.sleep(30)
 
+    #rospy.sleep(30)
+    
 
     rospy.spin()
 
