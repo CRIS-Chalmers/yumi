@@ -310,7 +310,7 @@ def main():
 
     ymuiContoller = YmuiContoller()
     rospy.sleep(0.05) # wait for every thing to initilize 
-    rospy.Subscriber("/Jacobian_R_L", Kinematics_msg, ymuiContoller.callback, queue_size=3)
+    rospy.Subscriber("/Jacobian_R_L", Kinematics_msg, ymuiContoller.callback, queue_size=3, tcp_nodelay=True)
     rospy.Subscriber("/Trajectroy", Trajectory_msg, ymuiContoller.callbackTrajectory, queue_size=1)
 
     rospy.spin()
