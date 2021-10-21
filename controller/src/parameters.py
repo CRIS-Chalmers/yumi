@@ -21,7 +21,7 @@ class Paramters():
     jointVelocityBound = np.array([1, 1, 1, 1, 1, 1, 1])
 
     # gripper collision avoidance (Only for indiviual motion and not coordinated motion)
-    gripperColllsionActive = 1 # 0 for deactivate 
+    gripperColllsionActive = 0 # 0 for deactivate 
     gripperMinDinstance = 0.12 # closet allowed disatance in [m]
 
     # elbow collision avoidance  
