@@ -134,6 +134,8 @@ class Calc_jacobian{
     // order input data
 
     std::vector<double> joint_state;
+    std::vector<double> joint_velocity;
+
     // naming for Rviz visualization
     std::string joint_name_list[18] = {"yumi_joint_1_r", "yumi_joint_2_r", "yumi_joint_7_r",
          "yumi_joint_3_r", "yumi_joint_4_r", "yumi_joint_5_r", "yumi_joint_6_r", 
@@ -209,6 +211,7 @@ Calc_jacobian::Calc_jacobian(ros::NodeHandle *nh ){
     fk_solver_right_arm = std::make_unique<KDL::ChainFkSolverPos_recursive>(yumi_right_arm);
     fk_solver_left_arm = std::make_unique<KDL::ChainFkSolverPos_recursive>(yumi_left_arm);
     joint_state.resize(18);
+    joint_velocity.resize(14);
 }
 
 
@@ -219,6 +222,7 @@ void Calc_jacobian::callback(const sensor_msgs::JointState::ConstPtr& joint_stat
         for (int j = 0; j < 14; j++){
             if (name_list[i].compare(joint_state_data->name[j]) == 0 ){
                 joint_state[i] = joint_state_data->position[j];// + joint_offset[i];
+                joint_velocity[i] = joint_state_data->velocity[j];// + joint_offset[i];
                 break;
             }
         }
@@ -288,9 +292,11 @@ void Calc_jacobian::update(){
     }
 
     // --------------------- Jacobians --------------------------------------------------
-    controller::Kinematics_msg jac_msg;
+    controller::Kinematics_msg kinematics_msg;
     // send joint position 
-    jac_msg.jointPosition = joint_state;
+    kinematics_msg.jointPosition = joint_state;
+    kinematics_msg.jointVelocity = joint_velocity;
+
     mtx_reciving.unlock();
 
     // arm 
@@ -301,7 +307,7 @@ void Calc_jacobian::update(){
 
     jacobian_data(7, jacobian_right_arm, jacobian_left_arm, &jac);
 
-    jac_msg.jacobian.push_back(jac);
+    kinematics_msg.jacobian.push_back(jac);
 
     // elbow 
     jac_solver_right_elbow->JntToJac(q_right_elbow, jacobian_right_elbow);
@@ -309,9 +315,9 @@ void Calc_jacobian::update(){
 
     jacobian_data(4, jacobian_right_elbow, jacobian_left_elbow, &jac);
 
-    jac_msg.jacobian.push_back(jac);
+    kinematics_msg.jacobian.push_back(jac);
 
-    jac_msg.header.stamp = ros::Time::now();
+    kinematics_msg.header.stamp = ros::Time::now();
 
     // --------------------- Forward Kinematics --------------------------------------------------
     // last frame has number 8!
@@ -324,19 +330,19 @@ void Calc_jacobian::update(){
     geometry_msgs::Pose pose;
 
     pose_data(frame_right_arm, &pose);
-    jac_msg.forwardKinematics.push_back(pose);
+    kinematics_msg.forwardKinematics.push_back(pose);
  
     pose_data(frame_left_arm, &pose);
-    jac_msg.forwardKinematics.push_back(pose);
+    kinematics_msg.forwardKinematics.push_back(pose);
 
     pose_data(frame_right_elbow, &pose);
-    jac_msg.forwardKinematics.push_back(pose);
+    kinematics_msg.forwardKinematics.push_back(pose);
 
     pose_data(frame_left_elbow, &pose);
-    jac_msg.forwardKinematics.push_back(pose);
+    kinematics_msg.forwardKinematics.push_back(pose);
 
     // publish msg
-    jacobian_pub.publish(jac_msg);
+    jacobian_pub.publish(kinematics_msg);
 
     ros::spinOnce(); // spin ros and send msg direcly 
 }

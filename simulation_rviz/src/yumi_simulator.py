@@ -81,6 +81,7 @@ def main():
                     "yumi_robl_joint_4", "yumi_robl_joint_5", "yumi_robl_joint_6", "yumi_robl_joint_7","gripper_r_joint", "gripper_r_joint_m",\
                     "gripper_l_joint", "gripper_l_joint_m",]
         msg.position = simulator.jointState.GetJointPosition().tolist()
+        msg.velocity = simulator.jointState.GetJointVelocity().tolist()
         pub.publish(msg)
         pub_egm_state.publish(msg_egm_state)
         rate.sleep()

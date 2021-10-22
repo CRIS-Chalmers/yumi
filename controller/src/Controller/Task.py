@@ -3,6 +3,9 @@
 import numpy as np
 import tf
 import rospy
+import os, sys
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from parameters import Paramters
 
 class Task(object): # based on https://github.com/ritalaezza/sot-myo/blob/akos_re/src/Task.py
@@ -128,8 +131,8 @@ class IndividualControl(Task):
         super(IndividualControl, self).__init__(Dof)
         self.constraintType = 0
 
-    def compute(self, controlTarget, jacobian):
-        effectorVelocities = controlTarget.getIndividualTargetVelocity(k_p=Paramters.k_p_i, k_o=Paramters.k_o_i) # k is the gain for vel = vel + k*error
+    def compute(self, controlVelocity, jacobian):
+        effectorVelocities = controlVelocity #controlTarget.getIndividualTargetVelocity(k_p=Paramters.k_p_i, k_o=Paramters.k_o_i) # k is the gain for vel = vel + k*error
         self.constraintMatrix = jacobian
         self.constraintVector = effectorVelocities
 
@@ -140,9 +143,10 @@ class RelativeControl(Task):
         super(RelativeControl, self).__init__(Dof)
         self.constraintType = 0
     
-    def compute(self, controlTarget, jacobian, transformer):
-        velocities, tfRightArm, tfLeftArm, absoluteOrientation = controlTarget.getRelativeTargetVelocity(k_p=Paramters.k_p_r, k_o=Paramters.k_o_r) # k is the gain for vel = vel + k*error
-
+    def compute(self, controlVelocity, jacobian, transformer, yumiGripperPoseR, yumiGripperPoseL):
+        #velocities, tfRightArm, tfLeftArm, absoluteOrientation = controlTarget.getRelativeTargetVelocity(k_p=Paramters.k_p_r, k_o=Paramters.k_o_r) # k is the gain for vel = vel + k*error
+        avgQ = np.vstack([yumiGripperPoseR.getQuaternion(), yumiGripperPoseL.getQuaternion()])
+        absoluteOrientation = utils.averageQuaternions(avgQ)
         tfMatrix = transformer.fromTranslationRotation(translation=np.array([0,0,0]), rotation=absoluteOrientation)
 
         rotaionMatrix = np.linalg.pinv(tfMatrix[0:3,0:3])
@@ -158,8 +162,8 @@ class RelativeControl(Task):
                             [np.zeros((3,3)), rotaionMatrix, np.zeros((3,3)), -rotaionMatrix]]))
         
         relativeJacobian = linkJ.dot(jacobian)
-        self.constraintMatrix = np.vstack([relativeJacobian])
-        self.constraintVector = np.hstack([velocities])
+        self.constraintMatrix = relativeJacobian
+        self.constraintVector = controlVelocity
 
 
 class AbsoluteControl(Task):
@@ -168,13 +172,13 @@ class AbsoluteControl(Task):
         super(AbsoluteControl, self).__init__(Dof)
         self.constraintType = 0
     
-    def compute(self, controlTarget, jacobian):
-        velocities = controlTarget.getAbsoluteTargetVelocity(k_p=Paramters.k_p_a, k_o=Paramters.k_o_a) # k is the gain for vel = vel + k*error
+    def compute(self, controlVelocity, jacobian):
+        #velocities = controlTarget.getAbsoluteTargetVelocity(k_p=Paramters.k_p_a, k_o=Paramters.k_o_a) # k is the gain for vel = vel + k*error
         # linking matrox that maps the grippers to the average of the grippers
         linkJ = np.hstack([0.5*np.eye(6), 0.5*np.eye(6)])
         absoluteJacobian = linkJ.dot(jacobian)
-        self.constraintMatrix = np.vstack([absoluteJacobian])
-        self.constraintVector = np.hstack([velocities])
+        self.constraintMatrix = absoluteJacobian
+        self.constraintVector = controlVelocity
 
 
 class ElbowProximityV2(Task):
@@ -190,7 +194,6 @@ class ElbowProximityV2(Task):
        
         translationRight = yumiElbowPoseR.getPosition()
         translationLeft = yumiElbowPoseL.getPosition()
-
         diff = translationRight[1] - translationLeft[1]
         d = np.linalg.norm(diff)
         jacobianNew = np.zeros((2, self.Dof))

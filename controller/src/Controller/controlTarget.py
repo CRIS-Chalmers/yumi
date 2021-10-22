@@ -74,7 +74,7 @@ class ControlTarget(object): # generates target velocity in task space
 
         self.targetVelocities[6:12] = self.desierdVelocity[6:12]  + K*self.error[6:12]
 
-        return self.targetVelocities[6:12], self.translationRightArm, self.translationLeftArm, self.absoluteOrientation
+        return self.targetVelocities[6:12]
 
     def checkNewTrajectorySegment(self):
         # returns True is a new segment has been entered, 
