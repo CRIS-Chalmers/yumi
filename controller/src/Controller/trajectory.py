@@ -13,7 +13,7 @@ class Trajectory(object):
         self.trajectory = [] # stores trajectory paramters
         self.trajectoryTime = 0 # keeps track on time, resest for every trajectory segment
         self.deltaTime = deltaTime
-        self.index = 1 # current target trajectory parameter, 0 is the current position. 
+        self.index = 1  # current target trajectory parameter, 0 is the current position.
         self.numberOfTrajectoryParamters = 0
         self.positionVelocitiesLeft = [] # stores velocity transitions between trajectory paramters
         self.positionVelocitiesRight = []
@@ -71,7 +71,7 @@ class Trajectory(object):
                 self.index = self.numberOfTrajectoryParamters - 1
 
         # calculates the target position and desierd velocity for a time point
-        q, dq = self.calcPosVel(qi=self.trajectory[self.index-1].positionRight,\
+        q, dq = utils.calcPosVel(qi=self.trajectory[self.index-1].positionRight,\
                                     dqi=self.positionVelocitiesRight[self.index-1],\
                                     qf=self.trajectory[self.index].positionRight,\
                                     dqf=self.positionVelocitiesRight[self.index],\
@@ -80,7 +80,7 @@ class Trajectory(object):
         self.targetPosition[0:3] = q
         self.desierdVelocity[0:3] = dq
 
-        q, dq = self.calcPosVel(qi=self.trajectory[self.index-1].positionLeft,\
+        q, dq = utils.calcPosVel(qi=self.trajectory[self.index-1].positionLeft,\
                                     dqi=self.positionVelocitiesLeft[self.index-1],\
                                     qf=self.trajectory[self.index].positionLeft,\
                                     dqf=self.positionVelocitiesLeft[self.index],\
@@ -94,9 +94,13 @@ class Trajectory(object):
                                 Rf=self.roationMatrixRight[self.index])
         self.targetOrientation[0:4] = quat
         self.desierdVelocity[3:6] = we
+        try:
+            quat, we = self.calcOrientation(Ri=self.roationMatrixLeft[self.index-1],\
+                                    Rf=self.roationMatrixLeft[self.index])
+        except Exception as e:
+            print(e)
+            print('index = ', self.index-1,' ' ,self.index)
 
-        quat, we = self.calcOrientation(Ri=self.roationMatrixLeft[self.index-1],\
-                                Rf=self.roationMatrixLeft[self.index])
         self.targetOrientation[4:8] = quat
         self.desierdVelocity[9:12] = we
 
@@ -106,19 +110,6 @@ class Trajectory(object):
         return self.targetPosition, self.targetOrientation, self.desierdVelocity,\
              self.trajectory[self.index].gripperLeft, self.trajectory[self.index].gripperRight
 
-    def calcPosVel(self, qi, dqi, qf, dqf, tf, t): 
-        # outputs target position and velocity, cubic interpolation between points 
-        num = np.shape(qi)[0]
-        q = np.zeros(num)
-        dq = np.zeros(num)
-        for k in range(num):
-            a0 = qi[k]
-            a1 = dqi[k]
-            a2 = 3 * (qf[k] - (dqf[k]*tf)/3 - a1*tf*(2/3) - a0)/(tf*tf)
-            a3 = (dqf[k] - (2*a2*tf + a1))/(3*tf*tf)
-            q[k] = a3*t**3 + a2*t**2  + a1*t + a0
-            dq[k] = 3*a3*t**2 + 2*a2*t + a1
-        return q, dq
 
     def calcOrientation(self, Ri, Rf): 
         # outputs target orientation and angular velocity
@@ -137,7 +128,7 @@ class Trajectory(object):
                                     [R_i_f[0,2] - R_i_f[2,0]],\
                                     [R_i_f[1,0] - R_i_f[0,1]]])
         # used for cubic interpolation
-        v, dv = self.calcPosVel(qi=np.array([0]),\
+        v, dv = utils.calcPosVel(qi=np.array([0]),\
                                     dqi=np.array([0]),\
                                     qf=np.array([vf]),\
                                     dqf=np.array([0]),\

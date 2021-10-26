@@ -11,9 +11,8 @@ class JointState(object):
     def __init__(self,\
             jointPosition=np.array([1.0, -2.0, -1.2, 0.6, -2.0, 1.0, 0.0, -1.0, -2.0, 1.2, 0.6, 2.0, 1.0, 0.0]),\
             jointVelocity=np.zeros(14)):
-        self.jointPosition = jointPosition # only arm not gripper
-        self.jointVelocity = jointVelocity # only arm not gripper
-
+        self.jointPosition = np.copy(jointPosition) # only arm not gripper
+        self.jointVelocity = np.copy(jointVelocity) # only arm not gripper
     
     def GetJointVelocity(self):
         return np.hstack([self.jointVelocity])
@@ -85,16 +84,9 @@ class TfBroadcastFrames(object):
 
 
 class FramePose(object):
-    def __init__(self, position=None, quaternion=None):
-        if position is None:
-            self.position = np.zeros(4)
-        else:
-            self.position = position
-        
-        if quaternion is None:
-            self.quaternion = np.zeros(4)
-        else:
-            self.quaternion = quaternion
+    def __init__(self, position=np.zeros(3), quaternion=np.zeros(4)):
+        self.position = np.copy(position)
+        self.quaternion = np.copy(quaternion)
             
         self.tempPosition = np.zeros(3)
         self.tempQuaternion = np.zeros(4)
@@ -142,20 +134,15 @@ class FramePose(object):
             self.position = tfMatrix.dot(np.hstack([gripperLocalTransfrom.getPosition(), 1]))
 
 
-def CalcJacobianCombined(data, gripperLocalTransform, transformer, yumiGrippPoseR, yumiGrippPoseL):
-    jacobianRightArm = np.zeros((6,7))
-    jacobianLeftArm = np.zeros((6,7))
-
+def CalcJacobianCombined(data, gripperLocalTransform, transformer, yumiGripPoseR, yumiGripPoseL):
     dataNP = np.asarray(data.data)
 
-    jacobianRightArm = dataNP[0::2].reshape((6,7))
-    jacobianLeftArm = dataNP[1::2].reshape((6,7))
+    jacobianRightArm = dataNP[0::2].reshape((6, 7))
+    jacobianLeftArm = dataNP[1::2].reshape((6, 7))
     
-    # change endeffector frame 
-    translationRightArm = yumiGrippPoseR.getPosition()
-    translationLeftArm = yumiGrippPoseL.getPosition()
-    rotationRightArm = yumiGrippPoseR.getQuaternion()
-    rotationLeftArm = yumiGrippPoseL.getQuaternion()
+    # change end-effector frame
+    rotationRightArm = yumiGripPoseR.getQuaternion()
+    rotationLeftArm = yumiGripPoseL.getQuaternion()
 
     jacobianRightArm = changeFrameJacobian(jacobianRightArm, gripperLocalTransform.getGripperRight(), rotationRightArm, transformer)
     jacobianLeftArm = changeFrameJacobian(jacobianLeftArm, gripperLocalTransform.getGripperLeft(), rotationLeftArm, transformer)
@@ -171,12 +158,8 @@ def changeFrameJacobian(jacobian, gripperLocal, rotation, transformer):
     zeros3 = np.zeros((3,3))
     linkRotation = np.array([[0, velocityXYZ[2,0], -velocityXYZ[1,0]],[-velocityXYZ[2,0],0,velocityXYZ[0,0]],\
         [velocityXYZ[1,0],-velocityXYZ[0,0],0]])
-    linkingMatrix2 = np.asarray(np.bmat([[eye3,linkRotation],[zeros3,eye3]]))
-    # rotation velocity only changes basis 
-    rotMatrix = transformer.fromTranslationRotation(translation=np.zeros(3), rotation=gripperLocal.getQuaternion())
-    linkingMatrix1 = np.asarray(np.bmat([[rotMatrix[0:3,0:3],zeros3],[zeros3,rotMatrix[0:3,0:3]]]))
-
-    return linkingMatrix1.dot(linkingMatrix2).dot(jacobian)
+    linkingMatrix = np.asarray(np.bmat([[eye3,linkRotation],[zeros3,eye3]]))
+    return linkingMatrix.dot(jacobian)
 
 class GripperControl(object):
     # class for controlling the grippers on YuMi, the grippers are controlled in [mm]
@@ -196,7 +179,7 @@ class GripperControl(object):
             # stacks/set the commands for the grippers 
             # to not sent same command twice. As the grippers momentarly regripps if the same command is sent twice. 
             # for left gripper
-            if gripperLeft:
+            if gripperLeft is not None:
                 if abs(self.lastGripperLeft - gripperLeft) >= tol:
                     if gripperLeft <= 0.1: # if gripper set close to zero then grip in 
                         self.SetSGCommand(task="T_ROB_L", command=6)
@@ -205,7 +188,7 @@ class GripperControl(object):
                     self.lastGripperLeft = gripperLeft
                 
             # for right gripper
-            if gripperRight:
+            if gripperRight is not None:
                 if abs(self.lastGripperRight - gripperRight) >= tol:
                     if gripperRight <= 0.1:
                         self.SetSGCommand(task="T_ROB_R", command=6)
@@ -219,7 +202,7 @@ class GripperControl(object):
 
         except:
             # The rviz simumlation is running then the ros service will fail, normal ROS communication is used
-            print('smart gripper error or running simulation')
+            print('smart gripper error')
             #msg = Float64MultiArray()
             #msg.data = [gripperRight, gripperLeft]
             #self.pubGripperSim.publish(msg)
@@ -310,6 +293,18 @@ def averageQuaternions(Q):
 
     return avgQ
 
-
+def calcPosVel(qi, dqi, qf, dqf, tf, t): 
+    # outputs target position and velocity, cubic interpolation between points 
+    num = np.shape(qi)[0]
+    q = np.zeros(num)
+    dq = np.zeros(num)
+    for k in range(num):
+        a0 = qi[k]
+        a1 = dqi[k]
+        a2 = 3 * (qf[k] - (dqf[k]*tf)/3 - a1*tf*(2/3) - a0)/(tf*tf)
+        a3 = (dqf[k] - (2*a2*tf + a1))/(3*tf*tf)
+        q[k] = a3*t**3 + a2*t**2  + a1*t + a0
+        dq[k] = 3*a3*t**2 + 2*a2*t + a1
+    return q, dq
 
 

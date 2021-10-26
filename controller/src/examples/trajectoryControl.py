@@ -3,59 +3,69 @@
 import rospy
 
 import os, sys
-print(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Controller.controller import YumiController
 from Controller.controlTarget import ControlTarget
-from parameters import Paramters
+from parameters import Parameters
 from controller.msg import Trajectory_msg
 import Controller.utils as utils
 import numpy as np
+from std_msgs.msg import Int64
+import threading
 
 class TrajectoryController(YumiController):
     def __init__(self):
         super(TrajectoryController, self).__init__()
-        #self.initialPose # if not set default will be used. 
-        self.controlTarget = ControlTarget(Paramters.dT)
+        self.controlTarget = ControlTarget(Parameters.dT)
         self.reset = False
+        self.pubSubTask = rospy.Publisher('/controller/sub_task', Int64, queue_size=1)
+        self.lockTrajectory = threading.Lock()
 
     def policy(self):
         # resets yumi to init pose
         if self.reset:
-            self.reset = resetPose(self.targetResetPose)
+            self.reset = self.resetPose()
+            if self.reset == False:
+                self.controlTarget = ControlTarget(Parameters.dT)
             return
             
         action = dict()
+        # Update the pose for controlTarget class
+        self.lockTrajectory.acquire()
 
-       # Update the pose for controlTarget class  
-        self.controlTarget.updatePose(yumiGrippPoseR=self.yumiGrippPoseR,\
-                                                 yumiGrippPoseL=self.yumiGrippPoseL)
-
+        self.controlTarget.updatePose(yumiGripPoseR=self.yumiGripPoseR,\
+                                                 yumiGripPoseL=self.yumiGripPoseL)
         # calculates target velocities and positions
         self.controlTarget.updateTarget()
-
         if self.controlTarget.checkNewTrajectorySegment():
             action['gripperRight'] = self.controlTarget.gripperRight
-            action['gripperLeft'] = self.controlTarget.gripperLeft 
-            
+            action['gripperLeft'] = self.controlTarget.gripperLeft
         action['controlSpace'] = self.controlTarget.mode
-
         # k is the gain for vel = vel + k*error
         if self.controlTarget.mode == 'individual':
-            action['cartesianVelocity'] = self.controlTarget.getIndividualTargetVelocity(k_p=Paramters.k_p_i, k_o=Paramters.k_o_i)
+            action['cartesianVelocity'] = self.controlTarget.getIndividualTargetVelocity(k_p=Parameters.k_p_i, k_o=Parameters.k_o_i)
         elif self.controlTarget.mode == 'coordinated':
-            action['absoluteVelocity'] = self.controlTarget.getRelativeTargetVelocity(k_p=Paramters.k_p_r, k_o=Paramters.k_o_r) 
-            action['relativeVelocity'] = self.controlTarget.getAbsoluteTargetVelocity(k_p=Paramters.k_p_a, k_o=Paramters.k_o_a) 
-        action['colisionAvoidance'] = False
+            action['absoluteVelocity'] = self.controlTarget.getRelativeTargetVelocity(k_p=Parameters.k_p_r, k_o=Parameters.k_o_r)
+            action['relativeVelocity'] = self.controlTarget.getAbsoluteTargetVelocity(k_p=Parameters.k_p_a, k_o=Parameters.k_o_a)
+
         self.setAction(action)
+
+        # sends information about which part of the trajectort is beeing executed
+        msgSubTask = Int64()
+        msgSubTask.data = self.controlTarget.trajectory.index - 1
+        self.lockTrajectory.release()
+
+        self.pubSubTask.publish(msgSubTask)
 
 
     def callbackTrajectory(self, data):
-        # Gets called when a new set of trajectory paramters is recived
-        # The variable names in this funciton and the the trajectory class follows 
+        # Gets called when a new set of trajectory parameters is received
+        # The variable names in this function and the the trajectory class follows
         # individual motion with left and right . This means when coordinate manipulation 
         # is usd, right is aboslute motion and left becomes relative motion. 
-        
+        if not self.controlTarget.dataReceived:
+            print('No data recived, start robot or simulation before sending trajectory')
+            return
         # get current pose, used as first trajectory paramter 
         if data.mode == 'coordinated':
             positionRight = np.copy(self.controlTarget.absolutePosition)
@@ -67,6 +77,9 @@ class TrajectoryController(YumiController):
             positionLeft  = np.copy(self.controlTarget.translationLeftArm)
             orientationRight = np.copy(self.controlTarget.rotationRightArm)
             orientationLeft = np.copy(self.controlTarget.rotationLeftArm)
+        elif data.mode == 'resetPose':
+            self.reset = True
+            return
         else:
             print('Error, mode not matching combined or individual')
             return
@@ -107,8 +120,6 @@ class TrajectoryController(YumiController):
                                                     pointTime=pointTime)
             trajectory.append(trajectroyPoint)
 
-        #self.lock.acquire() # lock when updating trajectory       
-
         # use current velocity for smoother transitions, (only for translation)
         if self.controlTarget.mode == data.mode: # no change in control mode
             velLeftInit = np.copy(self.controlTarget.targetVelocities[6:9])
@@ -126,7 +137,8 @@ class TrajectoryController(YumiController):
             print('Warning, Previous mode not matching, combined or individual')
             velLeftInit = np.zeros(3)
             velRightInit = np.zeros(3)
-            
+
+        self.lockTrajectory.acquire()
         # set mode
         self.controlTarget.mode = data.mode
 
@@ -134,14 +146,14 @@ class TrajectoryController(YumiController):
         self.controlTarget.trajectory.updateTrajectory(trajectory, velLeftInit, velRightInit)
         self.controlTarget.trajIndex = 0
         self.controlTarget.trajectorySegment = 0
+        self.lockTrajectory.release()
 
-        #self.lock.release() 
 
 
 
 def main():
     # starting ROS node and subscribers
-    rospy.init_node('controller', anonymous=True) 
+    rospy.init_node('trajectoryController', anonymous=True) 
 
     ymuiContoller = TrajectoryController()
     rospy.Subscriber("/Trajectroy", Trajectory_msg, ymuiContoller.callbackTrajectory, queue_size=1, tcp_nodelay=True)

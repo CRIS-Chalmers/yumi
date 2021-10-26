@@ -7,7 +7,8 @@ import numpy as np
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64MultiArray
 from abb_egm_msgs.msg import EGMState, EGMChannelState
-
+from abb_rapid_sm_addin_msgs.srv import SetSGCommand
+from abb_robot_msgs.srv import TriggerWithResultCode
 
 class Simulator(object):
     def __init__(self):
@@ -19,17 +20,19 @@ class Simulator(object):
         lowerArmLimit = np.array([-168.5, -143.5, -168.5, -123.5, -290, -88, -229])*np.pi/(180)
         self.jointPoistionBoundUpper = np.hstack([upperArmLimit, upperArmLimit, np.array([0.025,0.025,0.025,0.025])]) # in radians and meter for the grippers
         self.jointPoistionBoundLower = np.hstack([lowerArmLimit, lowerArmLimit, np.array([-0.0,-0.0,-0.0,-0.0])]) # in radians and meter for the grippers
-        self.targetGripperPos = np.array([0.0, 0.0]) 
-        
+        self.targetGripperPos = np.array([0.0, 0.0])
+        # create ros service for grippers
+        rospy.Service('/yumi/rws/sm_addin/set_sg_command', SetSGCommand, self.receiveGripperCommand)
+        rospy.Service('/yumi/rws/sm_addin/run_sg_routine', TriggerWithResultCode, self.setGripperCommand)
+        self.jointNamesGrippers = ['gripper_l_joint', 'gripper_l_joint_m', 'gripper_r_joint', 'gripper_r_joint_m'] # name of gripper joints in urdf
+        self.gripperPosition = np.array([0.0,0.0]) # used to store gripper commands until they are used
+
     def callback(self, data):
         vel = np.asarray(data.data)
         vel = np.hstack([vel[7:14], vel[0:7], np.zeros(4)])
         self.lock.acquire()
         self.jointState.UpdateVelocity(vel)
         self.lock.release()
-
-    def callbackGripper(self, data):
-        self.targetGripperPos = np.asarray(data.data)
 
     def update(self):
         # updates the pose
@@ -39,14 +42,42 @@ class Simulator(object):
         leftGripper = self.jointState.GetJointPosition()[16:18]
         self.lock.release()
 
-        velRightGripper = (self.targetGripperPos[0]/1000 - rightGripper)*self.dT
+        velRightGripper = (self.targetGripperPos[0] - rightGripper)*self.dT
         pose[14:16] = rightGripper + velRightGripper
-        velLeftGripper = (self.targetGripperPos[1]/1000 - leftGripper)*self.dT
+        velLeftGripper = (self.targetGripperPos[1] - leftGripper)*self.dT
         pose[16:18] = leftGripper + velLeftGripper
 
         # hard joint limits 
         pose = np.clip(pose, self.jointPoistionBoundLower, self.jointPoistionBoundUpper)
         self.jointState.UpdatePose(pose=pose)
+
+    def receiveGripperCommand(self, SetSGCommand):
+        # callback for gripper set_sg_command service, only 3 functionalities emulated, move to, grip in and grip out.
+        # indx for left gripper task
+        if SetSGCommand.task == 'T_ROB_R':
+            index_a = 0
+        # inex for the right gripper
+        elif SetSGCommand.task == 'T_ROB_L':
+            index_a = 1
+        else:
+            return [2, '']# returns failure state as service is finished
+
+        if SetSGCommand.command == 5:  # move to
+            self.gripperPosition[index_a] = SetSGCommand.target_position /1000 # convert mm to meters
+
+        elif SetSGCommand.command == 6: # grip in
+            self.gripperPosition[index_a] = 0
+        elif SetSGCommand.command == 7: # grip out
+            self.gripperPosition[index_a] = 0.025
+        else:
+            return [2, ''] # returns failure state as service is finished
+
+        return [1, ''] # returns success state as service is finished
+
+    def setGripperCommand(self, SetSGCommand):
+        # callback for run_sg_routine, runs the gripper commands, i.e. grippers wont move before this service is called.
+        self.targetGripperPos = np.copy(self.gripperPosition)
+        return [1, '']
 
 
 def main():
@@ -58,8 +89,8 @@ def main():
 
     simulator = Simulator()
 
-    rospy.Subscriber("/yumi/egm/joint_group_velocity_controller/command", Float64MultiArray, simulator.callback, queue_size=1)
-    rospy.Subscriber("/sim/grippers", Float64MultiArray, simulator.callbackGripper, queue_size=1)
+    rospy.Subscriber("/yumi/egm/joint_group_velocity_controller/command", Float64MultiArray, simulator.callback,
+                     queue_size=1, tcp_nodelay=True)
 
     rate = rospy.Rate(simulator.updateRate) 
 

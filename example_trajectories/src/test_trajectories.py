@@ -36,10 +36,10 @@ def main():
     # ---------------
 
     trajectoryPoint = Trajectory_point()
-    trajectoryPoint.positionRight = [0.35, 0, 0.35]
-    trajectoryPoint.positionLeft = [0.05, 0.35, 0.10]
-    trajectoryPoint.orientationLeft = [1,0,0,0]
-    trajectoryPoint.orientationRight = [1,0,0,0]
+    trajectoryPoint.positionRight = [0.3, -0.05, 0.2]
+    trajectoryPoint.positionLeft = [0.3, 0.05, 0.2]
+    trajectoryPoint.orientationLeft = rotLeft
+    trajectoryPoint.orientationRight = rotRight
     trajectoryPoint.gripperLeft = 0
     trajectoryPoint.gripperRight = 0
     trajectoryPoint.pointTime = 10.0
@@ -49,8 +49,11 @@ def main():
     msg.trajectory = trajectory
     
     pub.publish(msg)
-    rospy.sleep(0.1)
-    pub.publish(msg)
+    #rospy.sleep(23)
+    msg = Trajectory_msg() # message will contain list of trajectory points
+    msg.header.stamp = rospy.Time.now() 
+    msg.mode = 'resetPose' # control mode
+    #pub.publish(msg)
 
     
     rospy.spin()

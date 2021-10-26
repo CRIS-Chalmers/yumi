@@ -162,7 +162,8 @@ class Calc_jacobian{
 
     // constructor
     Calc_jacobian(ros::NodeHandle *nh );
-    
+    // just init pose for initial visualization 
+    std::vector<double> init_joint_pos = {1.0, -2.0, -1.2, 0.6, -2.0, 1.0, 0.0, -1.0, -2.0, 1.2, 0.6, 2.0, 1.0, 0.0, 0.0,0.0,0.0,0.0};
     // functions 
 
     // saves input data from driver
@@ -274,6 +275,15 @@ void Calc_jacobian::update(){
         std::vector<double> msg_data = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
         msg.data = msg_data;
         velocity_pub.publish(msg);
+        // set initial joint pose for visualization
+        sensor_msgs::JointState msg_;
+        msg_.header.stamp = ros::Time::now();
+        for (int i = 0; i < 18; i++){
+            msg_.name.push_back(joint_name_list[i]);
+            msg_.position.push_back(init_joint_pos[i]);
+        }
+        std::cout << "inside loop" << std::endl;
+        joint_states_pub.publish(msg_);
         return;
     }
 
@@ -363,9 +373,10 @@ int main(int argc, char** argv){
 
 
     while (ros::ok()){
-        if (calc_jacobian.state_recived >= 1){ // Do not sen anython if nothing has been recived 
-            calc_jacobian.update();
-        }
+        //if (calc_jacobian.state_recived >= 1){ // Do not sen anython if nothing has been recived 
+        calc_jacobian.update();
+        std::cout << "update loop" << std::endl;
+        //}
         loop_rate.sleep();
     }
 

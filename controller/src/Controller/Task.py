@@ -6,7 +6,7 @@ import rospy
 import os, sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from parameters import Paramters
+from parameters import Parameters
 
 class Task(object): # based on https://github.com/ritalaezza/sot-myo/blob/akos_re/src/Task.py
     """
@@ -132,7 +132,7 @@ class IndividualControl(Task):
         self.constraintType = 0
 
     def compute(self, controlVelocity, jacobian):
-        effectorVelocities = controlVelocity #controlTarget.getIndividualTargetVelocity(k_p=Paramters.k_p_i, k_o=Paramters.k_o_i) # k is the gain for vel = vel + k*error
+        effectorVelocities = controlVelocity #controlTarget.getIndividualTargetVelocity(k_p=Parameters.k_p_i, k_o=Parameters.k_o_i) # k is the gain for vel = vel + k*error
         self.constraintMatrix = jacobian
         self.constraintVector = effectorVelocities
 
@@ -144,7 +144,7 @@ class RelativeControl(Task):
         self.constraintType = 0
     
     def compute(self, controlVelocity, jacobian, transformer, yumiGripperPoseR, yumiGripperPoseL):
-        #velocities, tfRightArm, tfLeftArm, absoluteOrientation = controlTarget.getRelativeTargetVelocity(k_p=Paramters.k_p_r, k_o=Paramters.k_o_r) # k is the gain for vel = vel + k*error
+        #velocities, tfRightArm, tfLeftArm, absoluteOrientation = controlTarget.getRelativeTargetVelocity(k_p=Parameters.k_p_r, k_o=Parameters.k_o_r) # k is the gain for vel = vel + k*error
         avgQ = np.vstack([yumiGripperPoseR.getQuaternion(), yumiGripperPoseL.getQuaternion()])
         absoluteOrientation = utils.averageQuaternions(avgQ)
         tfMatrix = transformer.fromTranslationRotation(translation=np.array([0,0,0]), rotation=absoluteOrientation)
@@ -173,7 +173,7 @@ class AbsoluteControl(Task):
         self.constraintType = 0
     
     def compute(self, controlVelocity, jacobian):
-        #velocities = controlTarget.getAbsoluteTargetVelocity(k_p=Paramters.k_p_a, k_o=Paramters.k_o_a) # k is the gain for vel = vel + k*error
+        #velocities = controlTarget.getAbsoluteTargetVelocity(k_p=Parameters.k_p_a, k_o=Parameters.k_o_a) # k is the gain for vel = vel + k*error
         # linking matrox that maps the grippers to the average of the grippers
         linkJ = np.hstack([0.5*np.eye(6), 0.5*np.eye(6)])
         absoluteJacobian = linkJ.dot(jacobian)
