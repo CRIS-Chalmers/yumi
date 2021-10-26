@@ -195,8 +195,8 @@ class YumiController(object):
             # Gripper collision avoidance
             if action['gripperCollision']:
                 self.endEffectorCollision.compute(jacobian=jacobianCombined,
-                                                  yumiPoseR=self.yumiGripPoseR,
-                                                  yumiPoseL=self.yumiGripPoseL)
+                                                  yumiGripperPoseR=self.yumiGripPoseR,
+                                                  yumiGripperPoseL=self.yumiGripPoseL)
                 SoT.append(self.endEffectorCollision)
 
             # Individual control objective
