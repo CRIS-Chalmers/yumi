@@ -53,13 +53,12 @@ class HQPSolver(object):
                 self.slack[i] = x[n_i:]
                 qd = x[:n_i]
             except:
-                print('error in task number')
-                print(i)
+                print('Error in task number ', i)
                 try:
                     self.stopEGM()
                 except:
-                    print('failed to stop EGM, if simulation dont suport egm this is normal')
-                print('Joint velocity set to 0 and egm is stoped')
+                    print('failed to stop EGM, if simulation dont support egm this is normal')
+                print('Joint velocity set to 0 and egm is stopped')
                 return np.zeros(n_i)
 
         # After solving the last task, return optimal joint velocities as control input.

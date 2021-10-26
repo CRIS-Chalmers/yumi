@@ -140,7 +140,7 @@ class ControlTarget(object):  # generates target velocity in task space
 
     def checkTrajectoryDeviation(self, maxTrajectoryDeviaiton):
         """
-        Returns false if any of the deviation limits for trajectory following has been violated.
+        Returns true if any of the deviation limits for trajectory following has been violated.
         :param maxTrajectoryDeviaiton: np.array([maxRightT, maxRightR, maxLeftT, maxLeftR]), shape(4)
         """
         errorRightT = np.linalg.norm(self.error[0:3])
@@ -151,9 +151,9 @@ class ControlTarget(object):  # generates target velocity in task space
         deviation = np.max(np.array([errorRightT, errorRightR, errorLeftT, errorLeftL]) - maxTrajectoryDeviaiton)
         
         if self.mode == 'individual' and Parameters.feasibilityObjectives['gripperCollision']:
-            return True
-
-        if deviation > 0:
             return False
 
-        return True
+        if deviation > 0:
+            return True
+
+        return False

@@ -87,7 +87,7 @@ class YumiController(object):
         self.jointVelocityBound.compute()  # constant
         # end effector collision avoidance
         self.endEffectorCollision = Task.EndEffectorProximity(Dof=Parameters.Dof,
-                                                              minDistance=Parameters.gripperMinDinstance,
+                                                              minDistance=Parameters.gripperMinDistance,
                                                               timestep=Parameters.dT)
 
         # Control objective
@@ -141,7 +141,7 @@ class YumiController(object):
          """
 
         # joint control
-        if action['controlSpace'] == 'JointSpace':
+        if action['controlSpace'] == 'jointSpace':
             self.velocityCommand.setVelocity(action['jointVelocities'])
         else:
             self.velocityCommand.setVelocity(self.inverseKinematics(action))

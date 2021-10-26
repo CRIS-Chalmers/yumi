@@ -20,6 +20,7 @@ class TrajectoryController(YumiController):
         self.reset = False
         self.pubSubTask = rospy.Publisher('/controller/sub_task', Int64, queue_size=1)
         self.lockTrajectory = threading.Lock()
+        self.maxDeviation = np.array([0.015, 0.15, 0.015, 0.15])
 
     def policy(self):
         # resets yumi to init pose
@@ -45,8 +46,15 @@ class TrajectoryController(YumiController):
         if self.controlTarget.mode == 'individual':
             action['cartesianVelocity'] = self.controlTarget.getIndividualTargetVelocity(k_p=Parameters.k_p_i, k_o=Parameters.k_o_i)
         elif self.controlTarget.mode == 'coordinated':
-            action['absoluteVelocity'] = self.controlTarget.getRelativeTargetVelocity(k_p=Parameters.k_p_r, k_o=Parameters.k_o_r)
-            action['relativeVelocity'] = self.controlTarget.getAbsoluteTargetVelocity(k_p=Parameters.k_p_a, k_o=Parameters.k_o_a)
+            action['absoluteVelocity'] = self.controlTarget.getAbsoluteTargetVelocity(k_p=Parameters.k_p_r, k_o=Parameters.k_o_r)
+            action['relativeVelocity'] = self.controlTarget.getRelativeTargetVelocity(k_p=Parameters.k_p_a, k_o=Parameters.k_o_a)
+
+        # check so deviation from the trajectory is not too big, stop if it is
+        # (turned of if gripperCollision is active for individual mode)
+        if self.controlTarget.checkTrajectoryDeviation(self.maxDeviation):
+            print('Deviation from trajectory too large, stopping')
+            action['controlSpace'] = 'jointSpace'
+            action['jointVelocities'] = np.zeros(Parameters.Dof)
 
         self.setAction(action)
 
@@ -69,7 +77,7 @@ class TrajectoryController(YumiController):
         # get current pose, used as first trajectory paramter 
         if data.mode == 'coordinated':
             positionRight = np.copy(self.controlTarget.absolutePosition)
-            positionLeft  = np.copy(self.controlTarget.realativPosition) 
+            positionLeft  = np.copy(self.controlTarget.relativePosition)
             orientationRight = np.copy(self.controlTarget.absoluteOrientation)
             orientationLeft = np.copy(self.controlTarget.rotationRelative)
         elif data.mode == 'individual':
@@ -121,14 +129,17 @@ class TrajectoryController(YumiController):
             trajectory.append(trajectroyPoint)
 
         # use current velocity for smoother transitions, (only for translation)
-        if self.controlTarget.mode == data.mode: # no change in control mode
+        if self.controlTarget.checkTrajectoryDeviation(self.maxDeviation):
+            velLeftInit = np.zeros(3)
+            velRightInit = np.zeros(3)
+        elif self.controlTarget.mode == data.mode:  # no change in control mode
             velLeftInit = np.copy(self.controlTarget.targetVelocities[6:9])
             velRightInit = np.copy(self.controlTarget.targetVelocities[0:3])
         elif self.controlTarget.mode == 'individual': # going from individual to coordinate motion
             # simple solution, not fully accurate trasition 
             velLeftInit = np.zeros(3)
-            velRightInit = 0.5*(np.copy(self.controlTarget.targetVelocities[0:3]) +\
-                                     np.copy(self.controlTarget.targetVelocities[6:9]))
+            velRightInit = 0.5*(np.copy(self.controlTarget.targetVelocities[0:3]) +
+                                np.copy(self.controlTarget.targetVelocities[6:9]))
         elif self.controlTarget.mode == 'coordinated': # going from coordinated to individual motion
             # simple solution, not fully accurate trasition 
             velLeftInit = np.copy(self.controlTarget.targetVelocities[0:3])
@@ -142,7 +153,7 @@ class TrajectoryController(YumiController):
         # set mode
         self.controlTarget.mode = data.mode
 
-        # update the trajectroy 
+        # update the trajectroy
         self.controlTarget.trajectory.updateTrajectory(trajectory, velLeftInit, velRightInit)
         self.controlTarget.trajIndex = 0
         self.controlTarget.trajectorySegment = 0
