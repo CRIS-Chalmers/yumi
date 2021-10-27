@@ -1,6 +1,6 @@
 # ignore visual studio settings
 *.json
 # ignore pycharm
-*.idea
+*.idea/
 # ignore pycache
 *.pyc
