@@ -1,49 +1,46 @@
-# yumi (Work in progress!)
+# YuMi controller 
 ROS implementation for YuMi control
 
+This package comes as is and use on your risk. 
 
 ## Maintainer 
 * Gabriel Arslan Waltersson
 
 ## Table of Contents
 * [General](#general)
-* [ROS Nodes](#ROSNodes)
 * [Dependencies](#dependencies)
 * [Usage](#usage)
 
 ## General
-For more in-depth infromation and comprehensive installation guide, look in the wiki page https://github.com/CRIS-Chalmers/yumi/wiki. This package contains control algorithms for inverse kinematics control of YuMi. The robot can be controlled with two modes.
-* individual manipulation, with individual manipulation the robotic arms are controlled seperatly. 
-* coordinated maniplation, with coordinated manipulation the robotic arms are controlled as a single system.
-
-This controller is only made to opperate with very slow motions as no dymanical effects have been included in the control loop. The inverse kinematics problem is solved with heieracal quadratic programing (HQP), the HQP implemented using the quadprog solver. The control objctives are solved together with feasibility objectives (wiki page for more info). The controller takes trajectory paramters as input and inperpolates between the points using cubic functions. The controller always follow the latest trajectory paramters recived and ingors the current or previous sent. The YuMi bask frame is the base frame for the trajectory paramters. The robot is visulized in rviz in real time and a very simple kinematics simulator is included. 
-
-## ROSNodes
-The controller operates over several nodes: kdl_kinematics, tf_broadcaster, controllerMaster and initalPoseJointController (exluding the YuMi drivers and ros robot_state_publisher).
-
-* kdl_kinematics: this node is responible for converting the recived joint positions to forward kinematics and calculate the jacobians. This node uses the kdl kinematics library.   
-
-* contollerMaster: this is the main node that does most of the calculations. IT is responisble for taking trajectory paramters and the infromation from the kinematics node and calcualte the real-time velocity commands for the robot.  
- 
-* tf_broadcaster: this node add frames to the ROS tf tree. 
-
+For more in-depth information and comprehensive installation guide, look in the 
+wiki page https://github.com/CRIS-Chalmers/yumi/wiki. This package contains interface and control algorithms for 
+the ABB YuMi ROS driver. The core functionality includes inverse kinematics for YuMi in both individual manipulation 
+and coordinated manipulation of the arms. There are several ways this package can be used. The idea is that you create a
+control class that inherits the yumiControl class and that you can then build functionally on top of it, see 
+controller/src/examples/customControllerTutorial.py. There is also a trajectory following controller implemented using
+the same structure, see controller/src/examples/trajectoryControl.py. This controller is mainly made to operate with 
+slow motions as no dynamical effects have been included in the control loop. The inverse kinematics problem is solved
+with heretical quadratic programing (HQP), the HQP implemented using the quadprog solver. The control objectives are
+solved together with feasibility objectives (wiki page for more info). The robot is visualized in rviz in real time and
+a very simple kinematics simulator is included. 
 
 
 ## Dependencies
-For a more comprehensive installationg guide take a look at the wiki, where a step by step guide from a fresh ubuntu 18 installation exists. This package uses Ros melodic and python3, ROS and catkin has to be reconfigured for python3
+For a more comprehensive installation guide take a look at the wiki, where a step-by-step guide from a fresh ubuntu 18 
+installation exists. This package uses Ros melodic and python3, ROS and catkin has to be reconfigured for python3
 * for python3 ros packages 
 ```
 sudo apt install python3-catkin-pkg-modules python3-rospkg-modules python3-empy python3-catkin-tools
 ```
 
-* the geometry2 pakage needs to be compiled for python3, https://github.com/ros/geometry2
+* the geometry2 package needs to be compiled for python3, https://github.com/ros/geometry2
 
 * build orocos_kinematics_dynamics from source in catkin/src
 ```
 https://github.com/orocos/orocos_kinematics_dynamics
 ```
 
-* python pakages, can be installed with pip3
+* python packages, can be installed with pip3
 ``` 
     numpy
     scipy
@@ -55,70 +52,48 @@ https://github.com/orocos/orocos_kinematics_dynamics
 https://github.com/ros-industrial/abb_robot_driver
 ```
 
-* Comand to complie for \catkin_ws folder
+* Command to compile for \catkin_ws folder
 ``` 
 catkin build -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.6m -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.6m.so
 ``` 
 
 ## Usage
-There are two ways to start the controller. Either the controller is started through the interface script or each node is started manually. If something unexpected happens and the robot needs to be stopped, always use the physical emergency button on the ABB flexpendant instead of trying to stop it through the command line. Another important warning, there is no guarantee that the HQP and inverse kinematics will find a good solution, so always be prepared and do not run the robot at a greater speed than what you are capable to intervene.  
+The controllers can be launched with roslaunch. 
 
-### Method 1:
+### Using simulation:
 
-To start the controller through the interface script. 
-
-* open a terminal and start the roscore
+For testing in a simulation, first start the simulator, this can be replaced by a more realistic simulator as long as it
+has the same ROS interface as the ABB ros driver. 
 ``` 
 roscore
-``` 
-
-* open a second terminal
-``` 
-rosrun robot_setup_tf Interface.py
-``` 
-This will launch a very simple command-line interface, where different commands can be entered to start different nodes. The interface also gives information about which nodes are running and what the valid commands are. Important the arms of the robot are not in the correct place until the simulation or the connection/EGM to the robot is started. For running in simulation type "startSimualtion" and press enter. For running on the real robot assuming that the ethernet is plugged in and the robot is in the correct state (read the wiki before attempting this), first type "connectYuMi", this will start the connection but not the EGM controllers. To start the internal controllers and EGM connection, type "startEGM", once this is active, the robot will follow any velocity commands. To reset the pose type "resetPose", before running this be sure that the robot is not close to anything (such as workspace or objects) as this mode does not handle collision avoidance. Once the robot is in a good position, i.e. after resetting the pose then the main controller can be started with "startController", at this point the robot will follow any trajectory parameters sent to the controller. ShutDown the system, first wait for the robot to not be moving, then type "shutDown". There are other commands to shutDown individual nodes if that is desired.     
-
-### Method 2:
-
-The second method of starting the controller is to launch all the nodes manually in separate terminals. This may give the user better control over what is running or to make modifications. It is advised to read through the wiki before attempting this. 
-
-* start yumi_description, this starts the rviz visualization and the robot_state_publisher for visualizing the robot pose, will automatically start a roscore if there isn't one already running.   
-``` 
-roslaunch yumi_description display.launch
-``` 
-
-* start tf broadcaster, for setting up transformation tree between the robot and world frame and the wrist to the tip of the grippers. Can be modified to include transformations to the camera and other objects.
-``` 
-rosrun robot_setup_tf tf_broadcaster
-``` 
-
-* start kdl_kinematics, this node calculates the forward and the jacobians from the joint positions. 
-``` 
-rosrun controller kdl_kinematics
-``` 
-
-* For starting a simple simulator, it only acts as an integrator for the joint velocities, but no the less is very useful for testing. 
-``` 
-rosrun simulation_rviz yumi_simulator.py
-``` 
-
-* For robot or robotstudio (warning: this activates EGM and joint controllers and also closes EGM and rapid when set_yumi_settings_and_start.py is closed) (In our lab, Ip: 192.168.125.1)
+rosrun controller yumi_simulator.py 
+```
+### Using hardware:
+warning: this activates EGM and joint controllers and also closes EGM and rapid when set_yumi_settings_and_start.py 
+is closed (In our lab, Ip: 192.168.125.1) (read wiki before attempting this)
 ```
 roslaunch abb_robot_bringup_examples ex3_rws_and_egm_yumi_robot.launch robot_ip:=<robot controller's IP address> 
-rosrun robot_setup_tf set_yumi_settings_and_start.py
+rosrun controller set_yumi_settings_and_start.py
 ```
 
-* To reset the pose, make sure the robot is in a good configuration before running this one, which will automatically terminate when it is done. Do not run this at the same time as the controllerMaster. 
+### Using the trajectory controller:
+Then use roslaunch to start the trajectory controller. 
 ``` 
-rosrun controller initalPoseJointController.py
+roslaunch controller yumiTrajectoryControl.launch 
+``` 
+Then to send example trajectories to the trajectory controller run.
+``` 
+rosrun controller testTrajectories.py 
+``` 
+### Running the customControllerTutorial.py:
+Only run this file in simulation as it only serves as a demonstration purposes i.e. build your own custom controller for 
+your use case. Start by launching the simulation as above. The launch the base.launch, this launches the visualization 
+and some background nodes. 
+``` 
+roslaunch controller base.launch 
+``` 
+Then to start the controller run.
+``` 
+rosrun controller customControllerTutorial.py
 ``` 
 
-* Start the controller, it is advised to run the rest pose controller before starting this one as it is easy to have the wrist joints saturated otherwise, which could give bad results. When this is started the robot will follow the trajectory parameters sent to it.
-``` 
-rosrun controller controllerMaster.py
-``` 
-### Test
-For testing a script with example trajectories are provided, the trajectory parameters are hardcoded in this example but much more advanced planners can be made. 
-``` 
-rosrun example_trajectories test_trajectories.py
-``` 
