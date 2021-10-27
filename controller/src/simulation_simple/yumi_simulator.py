@@ -14,17 +14,22 @@ class Simulator(object):
     def __init__(self):
         self.updateRate = 250 #hz
         self.dT = 1/self.updateRate
-        self.jointState = utils.JointState(jointPosition=np.array([1.0, -2.0, -1.2, 0.6, -2.0, 1.0, 0.0, -1.0, -2.0, 1.2, 0.6, 2.0, 1.0, 0.0]))
+        self.jointState = utils.JointState(jointPosition=np.array([1.0, -2.0, -1.2, 0.6, -2.0, 1.0, 0.0,
+                                                                   -1.0, -2.0, 1.2, 0.6, 2.0, 1.0, 0.0]))
+
         self.lock = threading.Lock()
-        upperArmLimit = np.array([168.5, 43.5, 168.5, 80, 290, 138, 229])*np.pi/(180)
-        lowerArmLimit = np.array([-168.5, -143.5, -168.5, -123.5, -290, -88, -229])*np.pi/(180)
-        self.jointPoistionBoundUpper = np.hstack([upperArmLimit, upperArmLimit, np.array([0.025,0.025,0.025,0.025])]) # in radians and meter for the grippers
-        self.jointPoistionBoundLower = np.hstack([lowerArmLimit, lowerArmLimit, np.array([-0.0,-0.0,-0.0,-0.0])]) # in radians and meter for the grippers
+
+        upperArmLimit = np.array([168.5, 43.5, 168.5, 80, 290, 138, 229])*np.pi/180
+        lowerArmLimit = np.array([-168.5, -143.5, -168.5, -123.5, -290, -88, -229])*np.pi/180
+
+        self.jointPositionBoundUpper = np.hstack([upperArmLimit, upperArmLimit, np.array([0.025, 0.025, 0.025, 0.025])])
+        self.jointPositionBoundLower = np.hstack([lowerArmLimit, lowerArmLimit, np.array([-0.0, -0.0, -0.0, -0.0])])
         self.targetGripperPos = np.array([0.0, 0.0])
         # create ros service for grippers
         rospy.Service('/yumi/rws/sm_addin/set_sg_command', SetSGCommand, self.receiveGripperCommand)
         rospy.Service('/yumi/rws/sm_addin/run_sg_routine', TriggerWithResultCode, self.setGripperCommand)
-        self.jointNamesGrippers = ['gripper_l_joint', 'gripper_l_joint_m', 'gripper_r_joint', 'gripper_r_joint_m'] # name of gripper joints in urdf
+        # name of gripper joints in urdf
+        self.jointNamesGrippers = ['gripper_l_joint', 'gripper_l_joint_m', 'gripper_r_joint', 'gripper_r_joint_m']
         self.gripperPosition = np.array([0.0,0.0]) # used to store gripper commands until they are used
 
     def callback(self, data):
@@ -48,31 +53,31 @@ class Simulator(object):
         pose[16:18] = leftGripper + velLeftGripper
 
         # hard joint limits 
-        pose = np.clip(pose, self.jointPoistionBoundLower, self.jointPoistionBoundUpper)
+        pose = np.clip(pose, self.jointPositionBoundLower, self.jointPositionBoundUpper)
         self.jointState.UpdatePose(pose=pose)
 
     def receiveGripperCommand(self, SetSGCommand):
         # callback for gripper set_sg_command service, only 3 functionalities emulated, move to, grip in and grip out.
-        # indx for left gripper task
+        # index for left gripper task
         if SetSGCommand.task == 'T_ROB_R':
             index_a = 0
-        # inex for the right gripper
+        # index for the right gripper
         elif SetSGCommand.task == 'T_ROB_L':
             index_a = 1
         else:
-            return [2, '']# returns failure state as service is finished
+            return [2, '']  # returns failure state as service is finished
 
         if SetSGCommand.command == 5:  # move to
-            self.gripperPosition[index_a] = SetSGCommand.target_position /1000 # convert mm to meters
+            self.gripperPosition[index_a] = SetSGCommand.target_position/1000  # convert mm to meters
 
-        elif SetSGCommand.command == 6: # grip in
+        elif SetSGCommand.command == 6:  # grip in
             self.gripperPosition[index_a] = 0
-        elif SetSGCommand.command == 7: # grip out
+        elif SetSGCommand.command == 7:  # grip out
             self.gripperPosition[index_a] = 0.025
         else:
-            return [2, ''] # returns failure state as service is finished
+            return [2, '']  # returns failure state as service is finished
 
-        return [1, ''] # returns success state as service is finished
+        return [1, '']  # returns success state as service is finished
 
     def setGripperCommand(self, SetSGCommand):
         # callback for run_sg_routine, runs the gripper commands, i.e. grippers wont move before this service is called.
@@ -107,10 +112,11 @@ def main():
         simulator.update()
         msg.header.stamp = rospy.Time.now()
         msg.header.seq = seq
-        msg.name = ["yumi_robr_joint_1", "yumi_robr_joint_2", "yumi_robr_joint_3", "yumi_robr_joint_4",\
-                    "yumi_robr_joint_5", "yumi_robr_joint_6", "yumi_robr_joint_7",  "yumi_robl_joint_1", "yumi_robl_joint_2", "yumi_robl_joint_3", \
-                    "yumi_robl_joint_4", "yumi_robl_joint_5", "yumi_robl_joint_6", "yumi_robl_joint_7","gripper_r_joint", "gripper_r_joint_m",\
-                    "gripper_l_joint", "gripper_l_joint_m",]
+        msg.name = ["yumi_robr_joint_1", "yumi_robr_joint_2", "yumi_robr_joint_3", "yumi_robr_joint_4",
+                    "yumi_robr_joint_5", "yumi_robr_joint_6", "yumi_robr_joint_7",  "yumi_robl_joint_1",
+                    "yumi_robl_joint_2", "yumi_robl_joint_3", "yumi_robl_joint_4", "yumi_robl_joint_5",
+                    "yumi_robl_joint_6", "yumi_robl_joint_7", "gripper_r_joint", "gripper_r_joint_m",
+                    "gripper_l_joint", "gripper_l_joint_m"]
         msg.position = simulator.jointState.GetJointPosition().tolist()
         msg.velocity = simulator.jointState.GetJointVelocity().tolist()
         pub.publish(msg)

@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   abb_rapid_sm_addin_msgs
   abb_robot_msgs
+  abb_rws_service_provider
 )
 
 ## System dependencies are found with CMake's conventions
