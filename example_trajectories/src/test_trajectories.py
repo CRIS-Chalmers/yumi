@@ -303,8 +303,14 @@ def main():
     pub.publish(msg)
     print('sent msg 3, coordinated ')
 
-    # rospy.sleep(30)
+    rospy.sleep(96)
+    # --------------------------------------------
 
+    msg = Trajectory_msg()
+    msg.header.stamp = rospy.Time.now()
+    msg.mode = 'resetPose'
+    pub.publish(msg)
+    print('resetPose')
     rospy.spin()
 
 

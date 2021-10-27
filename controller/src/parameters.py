@@ -13,28 +13,17 @@ class Parameters():
     dT = 1/50 
     
     # degrees of freedom for the robot (Code will not work if changed without other modifications)
-    Dof = 14    
-    
-    # k is the gain for vel = vel + k*error
-    # Gain for individual Control
-    k_p_i = 2  # Gain for positional error
-    k_o_i = 2  # Gain for angular error
-
-    # Gain for absolute control 
-    k_p_a = 2  # Gain for positional error
-    k_o_a = 2  # Gain for angular error
-
-    # Gain for relative control
-    k_p_r = 2  # Gain for positional error
-    k_o_r = 2  # Gain for angular error
+    Dof = 14
 
     # reset position 
-    resetPos = np.array([0.7, -1.7, -0.8, 1.0, -2.2, 1.0, 0.0, -0.7, -1.7, 0.8, 1.0, 2.2, 1.0, 0.0])  # need to be tuned
-    #
+    resetPos = np.array([0.7, -1.7, -0.8, 1.0, -2.2, 1.0, 0.0, -0.7, -1.7, 0.8, 1.0, 2.2, 1.0, 0.0])
+
+    # Which feasibility objectives that should be included in HQP, only used for inverse-kinematics and
+    # not for pure joint-space control
     feasibilityObjectives = {'jointPositionBound': True,
                              'JointVelocityBound': True,
                              'elbowCollision': True,
-                             'gripperCollision': False,
+                             'gripperCollision': False,  # only used for individual control
                              'jointPotential': True}
                              
     # Max values before joints becomes saturated, values are from
@@ -54,9 +43,8 @@ class Parameters():
     # For joint potential, defining a neutral pose to move towards
     neutralPose = np.array([0.7, -1.7, -0.8, 1.0, -2.2, 1.0, 0.0, -0.7, -1.7, 0.8, 1.0, 2.2, 1.0, 0.0])
 
-    # used for coordinated manipulation only, individual can deviate due to gripper collision avoidance
-    # maxTrajectoryDeviaiton = np.array([0.01,0.01,0.01, 0.1,0.1,0.1, 0.01,0.01,0.01, 0.1,0.1,0.1])
-    rotLocal = tf.transformations.quaternion_from_euler(35*np.pi/180, 0, 0, 'rzyx')
-    gripperRightLocal = utils.FramePose(position=np.array([0, 0, 0.143]), quaternion=rotLocal)
+    # set local offset between "yumi_link_7_r" and "yumi_grip_r" which becomes the frame controlled.
+    #rotLocal = tf.transformations.quaternion_from_euler(35*np.pi/180, 0, 0, 'rzyx')
+    gripperRightLocal = utils.FramePose(position=np.array([0, 0, 0.143]), quaternion=np.array([0, 0, 0, 1]))
     gripperLeftLocal = utils.FramePose(position=np.array([0, 0, 0.143]), quaternion=np.array([0, 0, 0, 1]))
     yumiToWorldLocal = utils.FramePose(position=np.array([0.181, 0, 0]), quaternion=np.array([0, 0, 0.7071, -0.7071]))

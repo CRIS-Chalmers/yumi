@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import rospy
-
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -13,6 +12,19 @@ import Controller.utils as utils
 import numpy as np
 from std_msgs.msg import Int64
 import threading
+
+# k is the gain for vel = vel + k*error
+# Gain for individual Control
+K_P_I = 2  # Gain for positional error
+K_O_I = 2  # Gain for angular error
+
+# Gain for absolute control
+K_P_A = 2  # Gain for positional error
+K_O_A = 2  # Gain for angular error
+
+# Gain for relative control
+K_P_R = 2  # Gain for positional error
+K_O_R = 2  # Gain for angular error
 
 class TrajectoryController(YumiController):
     """Class for running trajectory control, trajectory parameters are sent with ros and
@@ -54,13 +66,13 @@ class TrajectoryController(YumiController):
 
         # k is the gain for vel = vel + k*error
         if self.controlTarget.mode == 'individual':
-            action['cartesianVelocity'] = self.controlTarget.getIndividualTargetVelocity(k_p=Parameters.k_p_i,
-                                                                                         k_o=Parameters.k_o_i)
+            action['cartesianVelocity'] = self.controlTarget.getIndividualTargetVelocity(k_p=K_P_I,
+                                                                                         k_o=K_O_I)
         elif self.controlTarget.mode == 'coordinated':
-            action['absoluteVelocity'] = self.controlTarget.getAbsoluteTargetVelocity(k_p=Parameters.k_p_r,
-                                                                                      k_o=Parameters.k_o_r)
-            action['relativeVelocity'] = self.controlTarget.getRelativeTargetVelocity(k_p=Parameters.k_p_a,
-                                                                                      k_o=Parameters.k_o_a)
+            action['absoluteVelocity'] = self.controlTarget.getAbsoluteTargetVelocity(k_p=K_P_A,
+                                                                                      k_o=K_O_A)
+            action['relativeVelocity'] = self.controlTarget.getRelativeTargetVelocity(k_p=K_P_R,
+                                                                                      k_o=K_O_R)
 
         # check so deviation from the trajectory is not too big, stop if it is
         # (turned of if gripperCollision is active for individual mode)

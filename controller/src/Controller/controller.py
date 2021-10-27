@@ -111,7 +111,7 @@ class YumiController(object):
         self.data = data
         # update joint position
         self.jointState.UpdatePose(pose=np.asarray(self.data.jointPosition))
-        self.jointState.UpdateVelocity(velocity=np.asarray(self.data.jointPosition))
+        self.jointState.UpdateVelocity(velocity=np.asarray(self.data.jointVelocity))
 
         # Forward kinematics, Using KDL here instead of tf tree 
         self.yumiGripPoseR.update_(self.data.forwardKinematics[0], self.transformer, self.tfFrames.getGripperRight())
@@ -120,6 +120,8 @@ class YumiController(object):
         self.yumiElbowPoseL.update_(self.data.forwardKinematics[3])
         self.yumiElbowPoseR.update_(self.data.forwardKinematics[2])
         self.policy()
+        # send frame transforms to tf tree
+        self.tfFrames.tfBroadcast()
         self.lock.release()
 
     def setAction(self, action):
@@ -205,16 +207,18 @@ class YumiController(object):
 
         elif action['controlSpace'] == 'coordinated':
             # Relative motion
-            self.relativeControl.compute(controlVelocity=action['relativeVelocity'],
-                                         jacobian=jacobianCombined,
-                                         transformer=self.transformer,
-                                         yumiGripperPoseR=self.yumiGripPoseR,
-                                         yumiGripperPoseL=self.yumiGripPoseL)
-            SoT.append(self.relativeControl) 
-            # Absolute motion 
-            self.absoluteControl.compute(controlVelocity=action['absoluteVelocity'],
-                                         jacobian=jacobianCombined)
-            SoT.append(self.absoluteControl) 
+            if 'relativeVelocity' in action:
+                self.relativeControl.compute(controlVelocity=action['relativeVelocity'],
+                                             jacobian=jacobianCombined,
+                                             transformer=self.transformer,
+                                             yumiGripperPoseR=self.yumiGripPoseR,
+                                             yumiGripperPoseL=self.yumiGripPoseL)
+                SoT.append(self.relativeControl)
+            # Absolute motion
+            if 'absoluteVelocity' in action:
+                self.absoluteControl.compute(controlVelocity=action['absoluteVelocity'],
+                                             jacobian=jacobianCombined)
+                SoT.append(self.absoluteControl)
 
         else:
             print('Non valid control mode, stopping')
@@ -266,8 +270,7 @@ class YumiController(object):
         msg = Float64MultiArray()
         msg.data = self.velocityCommand.getVelocityPublish()
         self.pub.publish(msg)
-        # send frame transforms to tf tree
-        self.tfFrames.tfBroadcast()
+
 
     def policy(self):
         """This function should generate velocity commands for the controller.
