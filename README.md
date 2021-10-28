@@ -58,7 +58,7 @@ catkin build -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/incl
 ``` 
 
 ## Usage
-The controllers can be launched with roslaunch. Checkout /controller/src/paramters.py for some accessible paramters that can be set.  
+The controllers can be launched with roslaunch. Checkout /controller/src/parameters.py for some accessible paramters that can be set.  
 
 ### Using simulation:
 
