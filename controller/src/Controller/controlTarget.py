@@ -27,8 +27,8 @@ class ControlTarget(object):  # generates target velocity in task space
         :param k_o: float for orientation gain.
         """
 
-        if len(self.trajectory.trajectory) < 2: 
-            return np.zeros(12)
+        #if len(self.trajectory.trajectory) < 2: 
+        #    return np.zeros(12)
 
         self.error[0:3] = utils.PositionError(self.translationRightArm,
                                               self.targetPosition[0:3], 0.1)
@@ -43,6 +43,8 @@ class ControlTarget(object):  # generates target velocity in task space
         
         self.targetVelocities = self.desiredVelocity + K*self.error
 
+        
+
         return self.targetVelocities
 
     def getAbsoluteTargetVelocity(self, k_p, k_o):
@@ -52,8 +54,8 @@ class ControlTarget(object):  # generates target velocity in task space
         :param k_o: float for orientation gain.
         """
 
-        if len(self.trajectory.trajectory) < 2: 
-            return np.zeros(12)
+        #if len(self.trajectory.trajectory) < 2: 
+        #    return np.zeros(12)
 
         self.error[0:3] = utils.PositionError(self.absolutePosition,
                                               self.targetPosition[0:3], 0.1)
@@ -73,8 +75,8 @@ class ControlTarget(object):  # generates target velocity in task space
         :param k_o: float for orientation gain.
         """
 
-        if len(self.trajectory.trajectory) < 2: 
-            return np.zeros(12)
+        #if len(self.trajectory.trajectory) < 2: 
+        #    return np.zeros(12)
         
         self.error[6:9] = utils.PositionError(self.relativePosition,
                                               self.targetPosition[3:6], 0.1)
@@ -96,6 +98,14 @@ class ControlTarget(object):  # generates target velocity in task space
             return True
         else:
             return False
+
+    def setTarget(self, targetPosition, targetOrientation, desiredVelocity):
+        """ Set the desired target position and velocity manuely """
+        self.targetPosition = targetPosition
+        self.targetOrientation = targetOrientation
+        self.desiredVelocity = desiredVelocity
+
+
 
     def updateTarget(self):
         """ updates the desired velocities and target position from the trajectory """

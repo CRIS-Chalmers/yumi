@@ -53,17 +53,20 @@ class VelocityCommand(object):
 
 class TfBroadcastFrames(object):
     """class for adding new frames to the tf tree and used internally for control"""
-    def __init__(self, gripperRight, gripperLeft, yumiToWorld):
+    def __init__(self, gripperRight, gripperLeft, yumiToWorld, harnessBord):
         """:param gripperRight: class instance of FramePose describing the local transformation from yumi_link_7_r
         to yumi_grip_r
          :param gripperLeft: class instance of FramePose describing the local transformation from yumi_link_7_l
         to yumi_grip_l
         :param yumiToWorld: class instance of FramePose describing the local transformation from yumi_base_link
-        to world"""
+        to world
+        :param harnessBord: class instance of FramePose describing the local transformation from yumi_base_link
+        to harnessBord"""
         self.tfbrodcaster = tf.TransformBroadcaster()
         self.gripperRight = gripperRight
         self.gripperLeft = gripperLeft
         self.yumiToWorld = yumiToWorld
+        self.harnessBord = harnessBord
 
     def updateGripperRight(self, gripperRight):
         """Update the frame
@@ -83,6 +86,12 @@ class TfBroadcastFrames(object):
         to world"""
         self.yumiToWorld = yumiToWorld
 
+    def updateHarnessBord(self, harnessBord):
+        """Update the frame
+          :param harnessBord: class instance of FramePose describing the local transformation from yumi_base_link
+        to world"""
+        self.harnessBord = harnessBord
+
     def getGripperRight(self):
         """Returns the frame"""
         return self.gripperRight
@@ -94,12 +103,21 @@ class TfBroadcastFrames(object):
     def getYumiToWorld(self):
         """Returns the frame"""
         return self.yumiToWorld
+    
+    def getHarnessBord(self):
+        """Returns the frame"""
+        return self.harnessBord
 
     def tfBroadcast(self):
         """Sends out to the tf tree"""
         self.tfbrodcaster.sendTransform(tuple(self.yumiToWorld.getPosition()),
                                         tuple(self.yumiToWorld.getQuaternion()),
                                         rospy.Time.now(), "world", "yumi_base_link")
+        
+        self.tfbrodcaster.sendTransform(tuple(self.harnessBord.getPosition()),
+                                        tuple(self.harnessBord.getQuaternion()),
+                                        rospy.Time.now(), "yumi_base_link", "harnessBord")
+
         self.tfbrodcaster.sendTransform(tuple(self.gripperRight.getPosition()),
                                         tuple(self.gripperRight.getQuaternion()),
                                         rospy.Time.now(), "yumi_grip_r", "yumi_link_7_r")

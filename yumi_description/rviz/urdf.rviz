@@ -1,16 +1,14 @@
 Panels:
   - Class: rviz/Displays
-    Help Height: 426
+    Help Height: 143
     Name: Displays
     Property Tree Widget:
       Expanded:
         - /Global Options1
         - /Status1
-        - /RobotModel1
-        - /TF1
         - /TF1/Frames1
       Splitter Ratio: 0.5
-    Tree Height: 374
+    Tree Height: 657
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -65,6 +63,11 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        ftsensor_l:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         gripper_l_base:
           Alpha: 1
           Show Axes: false
@@ -185,6 +188,16 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
+        fixation1:
+          Value: false
+        fixation2:
+          Value: false
+        fixation3:
+          Value: false
+        fixation4:
+          Value: false
+        ftsensor_l:
+          Value: false
         gripper_l_base:
           Value: false
         gripper_l_finger_l:
@@ -197,8 +210,18 @@ Visualization Manager:
           Value: false
         gripper_r_finger_r:
           Value: false
+        harnessBord:
+          Value: false
+        loop1:
+          Value: false
+        loop2:
+          Value: false
+        loop3:
+          Value: false
+        loop4:
+          Value: false
         world:
-          Value: true
+          Value: false
         yumi_base_link:
           Value: true
         yumi_body:
@@ -235,46 +258,141 @@ Visualization Manager:
           Value: false
         yumi_link_7_r:
           Value: false
-      Marker Scale: 0.5
+      Marker Scale: 0.20000000298023224
       Name: TF
       Show Arrows: false
       Show Axes: true
-      Show Names: true
+      Show Names: false
       Tree:
-        yumi_base_link:
-          world:
+        harnessBord:
+          fixation1:
             {}
-          yumi_body:
-            yumi_link_1_l:
-              yumi_link_2_l:
-                yumi_link_3_l:
-                  yumi_link_4_l:
-                    yumi_link_5_l:
-                      yumi_link_6_l:
-                        yumi_link_7_l:
-                          gripper_l_base:
-                            gripper_l_finger_l:
+          fixation2:
+            {}
+          fixation3:
+            {}
+          fixation4:
+            {}
+          loop1:
+            {}
+          loop2:
+            {}
+          loop3:
+            {}
+          loop4:
+            {}
+          yumi_base_link:
+            world:
+              {}
+            yumi_body:
+              yumi_link_1_l:
+                yumi_link_2_l:
+                  yumi_link_3_l:
+                    yumi_link_4_l:
+                      yumi_link_5_l:
+                        yumi_link_6_l:
+                          yumi_link_7_l:
+                            ftsensor_l:
+                              gripper_l_base:
+                                gripper_l_finger_l:
+                                  {}
+                                gripper_l_finger_r:
+                                  {}
+                            yumi_grip_l:
                               {}
-                            gripper_l_finger_r:
+              yumi_link_1_r:
+                yumi_link_2_r:
+                  yumi_link_3_r:
+                    yumi_link_4_r:
+                      yumi_link_5_r:
+                        yumi_link_6_r:
+                          yumi_link_7_r:
+                            gripper_r_base:
+                              gripper_r_finger_l:
+                                {}
+                              gripper_r_finger_r:
+                                {}
+                            yumi_grip_r:
                               {}
-                          yumi_grip_l:
-                            {}
-            yumi_link_1_r:
-              yumi_link_2_r:
-                yumi_link_3_r:
-                  yumi_link_4_r:
-                    yumi_link_5_r:
-                      yumi_link_6_r:
-                        yumi_link_7_r:
-                          gripper_r_base:
-                            gripper_r_finger_l:
-                              {}
-                            gripper_r_finger_r:
-                              {}
-                          yumi_grip_r:
-                            {}
       Update Interval: 0
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /DLO/FT_left
+      Name: Force
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /DLO/model
+      Name: DLO
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        fixation1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        fixation2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        fixation3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        fixation4:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        harnessBord:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        loop1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        loop2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        loop3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        loop4:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+      Name: RobotModel
+      Robot Description: harness_bord_description
+      TF Prefix: ""
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -303,7 +421,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.038330078125
+      Distance: 1.9801228046417236
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -318,10 +436,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.2097984105348587
+      Pitch: 0.17979824542999268
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 6.251787185668945
+      Yaw: 6.236794471740723
     Saved: ~
 Window Geometry:
   Displays:
@@ -329,7 +447,7 @@ Window Geometry:
   Height: 1025
   Hide Left Dock: true
   Hide Right Dock: true
-  QMainWindow State: 000000ff00000000fd0000000400000000000002750000035dfc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073000000003d0000035d000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d00650072006102000008d8000000510000056f000002f6000000010000010f000002cefc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003d000002ce000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073d00000044fc0100000002fb0000000800540069006d006501000000000000073d000002eb00fffffffb0000000800540069006d006501000000000000045000000000000000000000073d0000035d00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000002eb0000035dfc0200000009fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073000000003d0000035d000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d00650072006102000008d8000000510000056f000002f6000000010000010f000002cefc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003d000002ce000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073d00000044fc0100000002fb0000000800540069006d006500000000000000073d000002eb00fffffffb0000000800540069006d006501000000000000045000000000000000000000039f000003a700000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -338,6 +456,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: true
-  Width: 1853
-  X: 67
-  Y: 27
+  Width: 927
+  X: 707
+  Y: 1467

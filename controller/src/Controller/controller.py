@@ -36,7 +36,8 @@ class YumiController(object):
         
         self.tfFrames = utils.TfBroadcastFrames(Parameters.gripperRightLocal,
                                                 Parameters.gripperLeftLocal,
-                                                Parameters.yumiToWorldLocal)
+                                                Parameters.yumiToWorldLocal,
+                                                Parameters.harnessBord)
         self.tfFrames.tfBroadcast()
         self.transformer = tf.TransformerROS(True, rospy.Duration(1.0))
 
