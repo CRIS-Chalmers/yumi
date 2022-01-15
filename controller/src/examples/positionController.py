@@ -40,8 +40,8 @@ class Controller(YumiController):
         self.targetPose = np.zeros(12)
 
         # return error to DLO primitive to know about current state
-        self.pubCurrentPose = rospy.Publisher('YumiCurrentPose', YumiPose_msg, queue_size=10)
-        self.pubPoseError = rospy.Publisher('YumiPoseError', Float32, queue_size=10)
+        self.pubCurrentPose = rospy.Publisher('YumiCurrentPose', YumiPose_msg, queue_size=1)
+        self.pubPoseError = rospy.Publisher('YumiPoseError', Float32, queue_size=1)
 
     def policy(self):
 
@@ -113,6 +113,7 @@ class Controller(YumiController):
             action['controlSpace'] = 'individual'  # set the control space
             action['cartesianVelocity'] = np.zeros(12)  # set the velocity commands
             self.setAction(action)  # send them to the controller to be executed
+            self.pubPoseError.publish(1)
             
 
 
@@ -122,7 +123,7 @@ class Controller(YumiController):
                 self.targetPose = data.targetPose
                 self.mode = data.mode
             else:
-                rospy.logerr("%3.1f is not a valid number of dicet control velocities! 12 needed!", len(data.targetPose))
+                rospy.logerr("%3.1f is not a valid number of dicet control velocities! 14 needed!", len(data.targetPose))
                 self.mode = 'stop'
 
 
