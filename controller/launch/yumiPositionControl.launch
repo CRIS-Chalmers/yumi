@@ -1,6 +1,10 @@
 <launch>
 <include file="$(find yumi_description)/launch/display.launch" />
-<node pkg="controller" type="yumi_simulator.py" name="yumi_simulator" output="screen"/>
+<include file="$(find abb_robot_bringup_examples)/launch/ex3_rws_and_egm_yumi_robot.launch">
+  <arg name="robot_ip" value="192.168.125.1" />
+</include>
+<node pkg="controller" type="set_yumi_settings_and_start.py" name="set_yumi_settings_and_start" output="screen"/>
 <node name="kdl_kinematics" type="kdl_kinematics" pkg="controller" />
 <node pkg="controller" type="positionController.py" name="positionController" output="screen"/>
+<param name="TensionControllerAdded" type="double" value="6"/> <!-- multiply the Kp factor of the DLO length controller-->
 </launch>

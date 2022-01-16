@@ -1,0 +1,6 @@
+<launch>
+<include file="$(find yumi_description)/launch/display.launch" />
+<node pkg="controller" type="yumi_simulator.py" name="yumi_simulator" output="screen"/>
+<node name="kdl_kinematics" type="kdl_kinematics" pkg="controller" />
+<node pkg="controller" type="positionController.py" name="positionController" output="screen"/>
+</launch>

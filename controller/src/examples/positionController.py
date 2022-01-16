@@ -18,12 +18,12 @@ K_P_I = 1  # Gain for positional error
 K_O_I = 1  # Gain for angular error
 
 # Gain for absolute control
-K_P_A = 1  # Gain for positional error
-K_O_A = 1  # Gain for angular error
+K_P_A = 0.4  # Gain for positional error
+K_O_A = 0.4  # Gain for angular error
 
 # Gain for relative control
-K_P_R = 1  # Gain for positional error
-K_O_R = 1  # Gain for angular error
+K_P_R = 0.5  # Gain for positional error
+K_O_R = 0.5  # Gain for angular error
 
 
 class Controller(YumiController):

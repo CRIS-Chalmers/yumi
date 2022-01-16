@@ -21,6 +21,10 @@ class ControlTarget(object):  # generates target velocity in task space
         self.transformer = tf.TransformerROS(True, rospy.Duration(1.0))
         self.trajectorySegment = 0  # keeps track of which trajectory segment currently executed
 
+        self.targetPosition = np.zeros(6)
+        self.targetOrientation = np.zeros(8)
+        self.desiredVelocity = np.zeros(12)
+
     def getIndividualTargetVelocity(self, k_p, k_o):
         """Calculates the target velocities for individual control.
         :param k_p: float for position gain.
@@ -84,7 +88,7 @@ class ControlTarget(object):  # generates target velocity in task space
         self.error[9:12] = utils.RotationError(self.rotationRelative,
                                                self.targetOrientation[4:8], 0.2)
 
-        K = np.array([k_p, k_p, k_p, k_o, k_o, k_o])
+        K = np.array([k_p, k_p*rospy.get_param("/TensionControllerAdded"), k_p, k_o, k_o, k_o])
 
         self.targetVelocities[6:12] = self.desiredVelocity[6:12] + K*self.error[6:12]
 
