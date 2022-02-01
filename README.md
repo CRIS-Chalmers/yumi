@@ -20,7 +20,7 @@ control class that inherits the yumiControl class and that you can then build fu
 controller/src/examples/customControllerTutorial.py. There is also a trajectory following controller implemented using
 the same structure, see controller/src/examples/trajectoryControl.py. This controller is mainly made to operate with 
 slow motions as no dynamical effects have been included in the control loop. The inverse kinematics problem is solved
-with heretical quadratic programing (HQP), the HQP implemented using the quadprog solver. The control objectives are
+with hierarchical quadratic programing (HQP) implemented using the quadprog solver. The control objectives are
 solved together with feasibility objectives (wiki page for more info). The robot is visualized in rviz in real time and
 a very simple kinematics simulator is included. 
 
