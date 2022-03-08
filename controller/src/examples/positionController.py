@@ -39,6 +39,8 @@ class Controller(YumiController):
         self.mode = 'stop' # which mode is requested? 'reset', ' coordinated', 'individual', 'stop'
         self.targetPose = np.zeros(12)
 
+        rospy.set_param("/maxVel", 1.02)
+
         # return error to DLO primitive to know about current state
         self.pubCurrentPose = rospy.Publisher('YumiCurrentPose', YumiPose_msg, queue_size=1)
         self.pubPoseError = rospy.Publisher('YumiPoseError', Float32, queue_size=1)
@@ -77,6 +79,9 @@ class Controller(YumiController):
 
             # k is the gain for vel = vel + k*error
             action['cartesianVelocity'] = self.controlTarget.getIndividualTargetVelocity(k_p=K_P_I,  k_o=K_O_I)
+            action['cartesianVelocity'][0:3] = np.clip(self.controlTarget.getIndividualTargetVelocity(k_p=K_P_I,  k_o=K_O_I), -rospy.get_param("/maxVel"), rospy.get_param("/maxVel"))[0:3]
+            action['cartesianVelocity'][6:9] = np.clip(self.controlTarget.getIndividualTargetVelocity(k_p=K_P_I,  k_o=K_O_I), -rospy.get_param("/maxVel"), rospy.get_param("/maxVel"))[6:9]
+
 
             self.pubPoseError.publish(np.sum(np.abs(action['cartesianVelocity'])))
             
