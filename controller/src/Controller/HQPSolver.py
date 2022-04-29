@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+
 
 # Slightly modified vesion of https://github.com/ritalaezza/sot-myo/blob/akos_re/src/HQPSolver.py
 

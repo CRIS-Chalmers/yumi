@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+
 import rospy
 import os
 import sys
@@ -19,12 +20,12 @@ K_P_I = 2  # Gain for positional error
 K_O_I = 2  # Gain for angular error
 
 # Gain for absolute control
-K_P_A = 2  # Gain for positional error
-K_O_A = 2  # Gain for angular error
+K_P_A = 3  # Gain for positional error
+K_O_A = 3  # Gain for angular error
 
 # Gain for relative control
-K_P_R = 2  # Gain for positional error
-K_O_R = 2  # Gain for angular error
+K_P_R = 4  # Gain for positional error
+K_O_R = 4  # Gain for angular error
 
 class TrajectoryController(YumiController):
     """Class for running trajectory control, trajectory parameters are sent with ros and
@@ -35,23 +36,26 @@ class TrajectoryController(YumiController):
         self.reset = False
         self.pubSubTask = rospy.Publisher('/controller/sub_task', Int64, queue_size=1)
         self.lockTrajectory = threading.Lock()
-        self.maxDeviation = np.array([0.015, 0.15, 0.015, 0.15])
+        self.maxDeviation = np.array([0.015, 0.15, 0.15, 0.25])
 
     def policy(self):
         """Gets called for each time step and calculates the target velocity"""
-        # resets yumi to init pose
-        if self.reset:
-            self.reset = self.resetPose()
-            if self.reset == False:
-                self.controlTarget = ControlTarget(Parameters.dT)
-            return
-            
-        action = dict()  # used to store the desired action
+        
         # Update the pose for controlTarget class
         self.lockTrajectory.acquire()
 
         self.controlTarget.updatePose(yumiGripPoseR=self.yumiGripPoseR,
                                       yumiGripPoseL=self.yumiGripPoseL)
+        # resets yumi to init pose
+        if self.reset:
+            self.reset = self.resetPose()
+            if self.reset == False:
+                self.controlTarget = ControlTarget(Parameters.dT)
+            self.lockTrajectory.release()
+            return
+            
+        action = dict()  # used to store the desired action
+
 
         # calculates target velocities and positions
         self.controlTarget.updateTarget()
@@ -104,11 +108,13 @@ class TrajectoryController(YumiController):
             positionLeft  = np.copy(self.controlTarget.relativePosition)
             orientationRight = np.copy(self.controlTarget.absoluteOrientation)
             orientationLeft = np.copy(self.controlTarget.rotationRelative)
+            self.reset = False
         elif data.mode == 'individual':
             positionRight = np.copy(self.controlTarget.translationRightArm)
             positionLeft  = np.copy(self.controlTarget.translationLeftArm)
             orientationRight = np.copy(self.controlTarget.rotationRightArm)
             orientationLeft = np.copy(self.controlTarget.rotationLeftArm)
+            self.reset = False
         elif data.mode == 'resetPose':
             self.reset = True
             return

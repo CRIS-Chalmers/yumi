@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 
 import rospy
 from std_msgs.msg import Float64MultiArray
@@ -141,8 +140,11 @@ class YumiController(object):
          :key action['gripperLeft']: float for gripper position (mm)
          For more information see examples or documentation.
          """
+         
+        self.resetting = False
 
         # joint control
+
         if action['controlSpace'] == 'jointSpace':
             self.velocityCommand.setVelocity(action['jointVelocities'])
         else:

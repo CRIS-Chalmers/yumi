@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+
 
 import numpy as np
 import rospy
@@ -83,7 +83,6 @@ class ControlTarget(object):  # generates target velocity in task space
                                                self.targetOrientation[4:8], 0.2)
 
         K = np.array([k_p, k_p, k_p, k_o, k_o, k_o])
-
         self.targetVelocities[6:12] = self.desiredVelocity[6:12] + K*self.error[6:12]
 
         return self.targetVelocities[6:12]
