@@ -38,7 +38,7 @@ class YumiController(object):
                                                 Parameters.yumiToWorldLocal)
         self.tfFrames.tfBroadcast()
         self.transformer = tf.TransformerROS(True, rospy.Duration(1.0))
-
+        self.jacobianCombined = None
         # mutex
         self.lock = threading.Lock()
         # stack of tasks
@@ -118,10 +118,21 @@ class YumiController(object):
         
         self.yumiElbowPoseL.update_(self.data.forwardKinematics[3])
         self.yumiElbowPoseR.update_(self.data.forwardKinematics[2])
+        # Update jacobian 
+        self.calculateJacobian()
+
         self.policy()
         # send frame transforms to tf tree
         self.tfFrames.tfBroadcast()
         self.lock.release()
+
+    def calculateJacobian(self):
+        # calculated the combined Jacobian from base frame to tip of gripper for both arms
+        self.jacobianCombined = utils.CalcJacobianCombined(data=self.data.jacobian[0],
+                                                           gripperLocalTransform=self.tfFrames,
+                                                           transformer=self.transformer,
+                                                           yumiGripPoseR=self.yumiGripPoseR,
+                                                           yumiGripPoseL=self.yumiGripPoseL)
 
     def setAction(self, action):
         """ Sets and action and controls the robot, called from the self.policy() function.
@@ -164,12 +175,7 @@ class YumiController(object):
             if key not in action:
                 action[key] = value
 
-        # calculated the combined Jacobian from base frame to tip of gripper for both arms
-        jacobianCombined = utils.CalcJacobianCombined(data=self.data.jacobian[0],
-                                                      gripperLocalTransform=self.tfFrames,
-                                                      transformer=self.transformer,
-                                                      yumiGripPoseR=self.yumiGripPoseR,
-                                                      yumiGripPoseL=self.yumiGripPoseL)
+       
 
         # stack of tasks, in descending hierarchy
         # ----------------------
@@ -198,20 +204,20 @@ class YumiController(object):
         if action['controlSpace'] == 'individual':
             # Gripper collision avoidance
             if action['gripperCollision']:
-                self.endEffectorCollision.compute(jacobian=jacobianCombined,
+                self.endEffectorCollision.compute(jacobian=self.jacobianCombined,
                                                   yumiGripperPoseR=self.yumiGripPoseR,
                                                   yumiGripperPoseL=self.yumiGripPoseL)
                 SoT.append(self.endEffectorCollision)
 
             # Individual control objective
-            self.individualControl.compute(controlVelocity=action['cartesianVelocity'], jacobian=jacobianCombined)
+            self.individualControl.compute(controlVelocity=action['cartesianVelocity'], jacobian=self.jacobianCombined)
             SoT.append(self.individualControl)
 
         elif action['controlSpace'] == 'coordinated':
             # Relative motion
             if 'relativeVelocity' in action:
                 self.relativeControl.compute(controlVelocity=action['relativeVelocity'],
-                                             jacobian=jacobianCombined,
+                                             jacobian=self.jacobianCombined,
                                              transformer=self.transformer,
                                              yumiGripperPoseR=self.yumiGripPoseR,
                                              yumiGripperPoseL=self.yumiGripPoseL)
@@ -219,7 +225,7 @@ class YumiController(object):
             # Absolute motion
             if 'absoluteVelocity' in action:
                 self.absoluteControl.compute(controlVelocity=action['absoluteVelocity'],
-                                             jacobian=jacobianCombined)
+                                             jacobian=self.jacobianCombined)
                 SoT.append(self.absoluteControl)
 
         else:

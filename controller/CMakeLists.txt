@@ -60,6 +60,8 @@ add_message_files(
   Kinematics_msg.msg
   Trajectory_point.msg
   Trajectory_msg.msg
+  CartesianVelocityControl_msg.msg
+  PositionAndVelocity_msg.msg
 )
 
 ## Generate services in the 'srv' folder
