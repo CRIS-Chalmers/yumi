@@ -97,3 +97,16 @@ Then to start the controller run.
 rosrun controller customControllerTutorial.py
 ``` 
 
+### Runing cartesian velocity 
+Start Controller
+```
+roslaunch controller yumiCartesianVelocityControl.launch
+```
+Test Velocity
+```
+rostopic pub /yumi/egm/cartesianVelocityCommand
+```
+Subscribe to endeffector position and velocity
+```
+rostopic echo /yumi/egm/positionAndVelocity
+```
