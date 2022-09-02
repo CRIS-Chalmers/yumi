@@ -124,3 +124,11 @@ The message
 rostopic pub /yumi/egm/position std_msgs/Float32MultiArray
 ```
 data [posLeft[3], posRight[3], quatLeft[4], quatRight[4], gripperLeft[1], gripperRight[1], time[1]]
+
+
+
+## get endeffector vel
+```
+rostopic echo /yumi/egm/endeffectoVelCartesian
+```
+format Float32MultiArray -data [linLeft, linRight, rotLeft, rotRigth]

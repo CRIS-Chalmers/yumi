@@ -36,7 +36,7 @@ class TrajectoryController(YumiController):
         self.reset = False
         self.pubSubTask = rospy.Publisher('/controller/sub_task', Int64, queue_size=1)
         self.lockTrajectory = threading.Lock()
-        self.maxDeviation = np.array([0.015, 0.15, 0.15, 0.25])
+        self.maxDeviation = np.array([0.015, 0.25, 0.015, 0.25])
 
     def policy(self):
         """Gets called for each time step and calculates the target velocity"""

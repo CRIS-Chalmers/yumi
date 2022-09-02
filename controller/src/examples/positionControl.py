@@ -36,8 +36,10 @@ class TrajectoryController(YumiController):
         self.controlTarget = ControlTarget(Parameters.dT)
         self.reset = False
         self.pubSubTask = rospy.Publisher('/controller/sub_task', Int64, queue_size=1)
+        self.cartesianVel = rospy.Publisher('/yumi/egm/endeffectoVelCartesian', Float32MultiArray, queue_size=1)
+
         self.lockTrajectory = threading.Lock()
-        self.maxDeviation = np.array([0.015, 0.15, 0.15, 0.25])
+        self.maxDeviation = np.array([0.015, 0.25, 0.015, 0.25])
 
     def policy(self):
         """Gets called for each time step and calculates the target velocity"""
@@ -93,6 +95,21 @@ class TrajectoryController(YumiController):
         msgSubTask.data = self.controlTarget.trajectory.index - 1
         self.lockTrajectory.release()
         self.pubSubTask.publish(msgSubTask)
+
+        jointVel = self.jointState.GetJointVelocity()  # [Right, Left] [rad/s]
+        cartesianVel = self.jacobianCombined.dot(jointVel)
+        cartesianVel_m = np.hstack([cartesianVel[6:9], cartesianVel[0:3], cartesianVel[9:12], cartesianVel[3:6]]).tolist()
+
+
+        jointVel = self.jointState.GetJointVelocity()  # [Right, Left] [rad/s]
+        cartesianVel = self.jacobianCombined.dot(jointVel)
+        cartesianVel_m = np.hstack([cartesianVel[6:9], cartesianVel[0:3], cartesianVel[9:12], cartesianVel[3:6]]).tolist()
+
+        msgVel = Float32MultiArray()
+        msgVel.data = cartesianVel_m
+        self.cartesianVel.publish(msgVel)
+
+
 
     def callbackTrajectory(self, data):
         """ Gets called when a new set of trajectory parameters is received
