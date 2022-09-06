@@ -37,6 +37,7 @@ class TrajectoryController(YumiController):
         self.reset = False
         self.pubSubTask = rospy.Publisher('/controller/sub_task', Int64, queue_size=1)
         self.cartesianVel = rospy.Publisher('/yumi/egm/endeffectoVelCartesian', Float32MultiArray, queue_size=1)
+        self.cartesianSentVel = rospy.Publisher('/yumi/egm/sentEndeffectorVelCartesian', Float32MultiArray, queue_size=1)
 
         self.lockTrajectory = threading.Lock()
         self.maxDeviation = np.array([0.015, 0.25, 0.015, 0.25])
@@ -109,6 +110,13 @@ class TrajectoryController(YumiController):
         msgVel.data = cartesianVel_m
         self.cartesianVel.publish(msgVel)
 
+        jointVel = self.velocityCommand.getVelocity() 
+        cartesianVel = self.jacobianCombined.dot(jointVel)
+        cartesianVel_m = np.hstack([cartesianVel[6:9], cartesianVel[0:3], cartesianVel[9:12], cartesianVel[3:6]]).tolist()
+
+        msgVel = Float32MultiArray()
+        msgVel.data = cartesianVel_m
+        self.cartesianSentVel.publish(msgVel)
 
 
     def callbackTrajectory(self, data):
