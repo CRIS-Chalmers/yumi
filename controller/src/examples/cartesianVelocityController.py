@@ -30,6 +30,7 @@ class Controller(YumiController):
         self.timeout = 0.5
         self.velocity_pub = rospy.Publisher('/yumi/egm/positionAndVelocity', PositionAndVelocity_msg, 
                                             queue_size=1, tcp_nodelay=True)
+        self.cartesianVel = rospy.Publisher('/yumi/egm/endeffectoVelCartesian', Float32MultiArray, queue_size=1)
 
         #rospy.Subscriber("/yumi/egm/cartesianVelocityCommand", CartesianVelocityControl_msg, self.cartesianVelCallback, 
         #                 queue_size=3, tcp_nodelay=True)
@@ -83,6 +84,13 @@ class Controller(YumiController):
         msg.angularVelocityRight = cartesianVel[3:6]
 
         self.velocity_pub.publish(msg)
+
+
+        cartesianVel_m = np.hstack([cartesianVel[6:9], cartesianVel[0:3], cartesianVel[9:12], cartesianVel[3:6]]).tolist()
+
+        msgVel = Float32MultiArray()
+        msgVel.data = cartesianVel_m
+        self.cartesianVel.publish(msgVel)
 
     def cartesianVelCallback(self, data):
         command_list = data.data

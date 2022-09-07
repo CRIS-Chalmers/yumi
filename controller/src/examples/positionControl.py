@@ -101,11 +101,6 @@ class TrajectoryController(YumiController):
         cartesianVel = self.jacobianCombined.dot(jointVel)
         cartesianVel_m = np.hstack([cartesianVel[6:9], cartesianVel[0:3], cartesianVel[9:12], cartesianVel[3:6]]).tolist()
 
-
-        jointVel = self.jointState.GetJointVelocity()  # [Right, Left] [rad/s]
-        cartesianVel = self.jacobianCombined.dot(jointVel)
-        cartesianVel_m = np.hstack([cartesianVel[6:9], cartesianVel[0:3], cartesianVel[9:12], cartesianVel[3:6]]).tolist()
-
         msgVel = Float32MultiArray()
         msgVel.data = cartesianVel_m
         self.cartesianVel.publish(msgVel)
