@@ -222,7 +222,7 @@ void Calc_jacobian::callback(const sensor_msgs::JointState::ConstPtr& joint_stat
     for (int i = 0; i < 14; i++){
         for (int j = 0; j < 14; j++){
             if (name_list[i].compare(joint_state_data->name[j]) == 0 ){
-                joint_state[i] = joint_state_data->position[j];// + joint_offset[i];
+                joint_state[i] = joint_state_data->position[j] + joint_offset[i];
                 joint_velocity[i] = joint_state_data->velocity[j];
                 break;
             }

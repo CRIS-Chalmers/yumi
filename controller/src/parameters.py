@@ -45,6 +45,6 @@ class Parameters():
 
     # set local offset between "yumi_link_7_r" and "yumi_grip_r" which becomes the frame controlled.
     #rotLocal = tf.transformations.quaternion_from_euler(35*np.pi/180, 0, 0, 'rzyx')
-    gripperRightLocal = utils.FramePose(position=np.array([0, 0, 0.143]), quaternion=np.array([0, 0, 0, 1]))
-    gripperLeftLocal = utils.FramePose(position=np.array([0, 0, 0.143]), quaternion=np.array([0, 0, 0, 1]))
+    gripperRightLocal = utils.FramePose(position=np.array([0, 0, 0.146]), quaternion=np.array([0, 0, 0, 1]))
+    gripperLeftLocal = utils.FramePose(position=np.array([0, 0, 0.146]), quaternion=np.array([0, 0, 0, 1]))
     yumiToWorldLocal = utils.FramePose(position=np.array([0.181, 0, 0]), quaternion=np.array([0, 0, 0.7071, -0.7071]))
