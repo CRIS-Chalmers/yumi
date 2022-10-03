@@ -6,6 +6,9 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Controller.controller import YumiController
+import utils
+
+
 #from controller.msg import CartesianVelocityControl_msg
 from controller.msg import PositionAndVelocity_msg
 from std_msgs.msg import Float32MultiArray
@@ -74,10 +77,13 @@ class Controller(YumiController):
         velocity[1] = self.pos_controller['ry'].step(velocity[1], rightGripperPosition[1])
         velocity[2] = self.pos_controller['rz'].step(velocity[2], rightGripperPosition[2])
 
+        velocity[3:6] = 2*utils.RotationError(rightGripperOrientation, np.array([1, 0, 0, 0]) , 0.2)
 
         velocity[6] = self.pos_controller['lx'].step(velocity[6], leftGripperPosition[0])
         velocity[7] = self.pos_controller['ly'].step(velocity[7], leftGripperPosition[1])
         velocity[8] = self.pos_controller['lz'].step(velocity[8], leftGripperPosition[2])
+
+        velocity[9:12] =  2*utils.RotationError(leftGripperOrientation, np.array([1, 0, 0, 0]) , 0.2)
 
         action['cartesianVelocity'] = velocity  # set the velocity commands
 
