@@ -96,39 +96,3 @@ Then to start the controller run.
 ``` 
 rosrun controller customControllerTutorial.py
 ``` 
-
-### Runing cartesian velocity 
-Start Controller
-```
-roslaunch controller yumiCartesianVelocityControl.launch
-```
-Test Velocity
-```
-rostopic pub /yumi/egm/cartesianVelocityCommand
-```
-Subscribe to endeffector position and velocity
-```
-rostopic echo /yumi/egm/positionAndVelocity
-```
-
-### Runing position control
-Takes one position at the time
-
-To start
-```
-roslaunch controller positionControl.launch 
-```
-
-The message
-```
-rostopic pub /yumi/egm/position std_msgs/Float32MultiArray
-```
-data [posLeft[3], posRight[3], quatLeft[4], quatRight[4], gripperLeft[1], gripperRight[1], time[1]]
-
-
-
-## get endeffector vel
-```
-rostopic echo /yumi/egm/endeffectoVelCartesian
-```
-format Float32MultiArray -data [linLeft, linRight, rotLeft, rotRigth]
