@@ -16,7 +16,7 @@ import threading
 
 # k is the gain for vel = vel + k*error
 # Gain for individual Control
-K_P_I = 2  # Gain for positional error
+K_P_I = 4  # Gain for positional error
 K_O_I = 2  # Gain for angular error
 
 # Gain for absolute control
