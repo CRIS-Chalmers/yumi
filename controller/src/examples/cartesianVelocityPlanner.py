@@ -37,7 +37,9 @@ class Controller(YumiController):
                                'ly': HoldPosition(),
                                'lz': HoldPosition()}
         
-
+        self.rot_controller = {'right': HoldOrientation(),
+                                'left': HoldOrientation()}
+                                
         self.timeout = 0.5
         self.velocity_pub = rospy.Publisher('/yumi/egm/positionAndVelocity', PositionAndVelocity_msg, 
                                             queue_size=1, tcp_nodelay=True)
@@ -76,14 +78,15 @@ class Controller(YumiController):
         velocity[0] = self.pos_controller['rx'].step(velocity[0], rightGripperPosition[0])
         velocity[1] = self.pos_controller['ry'].step(velocity[1], rightGripperPosition[1])
         velocity[2] = self.pos_controller['rz'].step(velocity[2], rightGripperPosition[2])
-
-        velocity[3:6] = 2*utils.RotationError(rightGripperOrientation, np.array([1, 0, 0, 0]) , 0.2)
+        velocity[3:6] = self.rot_controller['right'].step(velocity[3:6], rightGripperOrientation)
+        # velocity[3:6] = 2*utils.RotationError(rightGripperOrientation, np.array([1, 0, 0, 0]) , 0.2)
 
         velocity[6] = self.pos_controller['lx'].step(velocity[6], leftGripperPosition[0])
         velocity[7] = self.pos_controller['ly'].step(velocity[7], leftGripperPosition[1])
         velocity[8] = self.pos_controller['lz'].step(velocity[8], leftGripperPosition[2])
+        velocity[9:12] = self.rot_controller['left'].step(velocity[9:12], leftGripperOrientation)
 
-        velocity[9:12] =  2*utils.RotationError(leftGripperOrientation, np.array([1, 0, 0, 0]) , 0.2)
+        #velocity[9:12] =  2*utils.RotationError(leftGripperOrientation, np.array([1, 0, 0, 0]) , 0.2)
 
         action['cartesianVelocity'] = velocity  # set the velocity commands
 
@@ -172,6 +175,27 @@ class HoldPosition(object):
         return vel
 
 
+class HoldOrientation(object):
+    def __init__(self):
+        self.target_orientation = np.array([1, 0, 0, 0])
+        self.non_zero_rot = np.zeros(3)
+
+    def step(self, rot_velocity, gripper_quat):
+        hold_vel = 2*utils.RotationError(gripper_quat, self.target_orientation, 0.2)
+        vel = np.zeros(3)
+
+        for i in range(3): 
+            if rot_velocity[i] != 0:
+                vel[i] = rot_velocity[i]
+                self.non_zero_rot[i] = 1
+            elif self.non_zero_rot[i] == 1:
+                self.target_orientation = gripper_quat
+                self.non_zero_rot[i] = 0
+                vel[i] = hold_vel[i]
+            else:
+                vel[i] = hold_vel[i]
+
+        return vel
 
 def main():
     # starting ROS node and subscribers
