@@ -8,7 +8,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Controller.controller import YumiController
 from Controller.controlTarget import ControlTarget
 from parameters import Parameters
-from controller.msg import Trajectory_msg
+from yumi_controller.msg import Trajectory_msg
+from abb_robot_msgs.msg import SystemState
+from abb_robot_msgs.srv import TriggerWithResultCode
+
 import Controller.utils as utils
 import numpy as np
 from std_msgs.msg import Int64
@@ -37,10 +40,34 @@ class TrajectoryController(YumiController):
         self.pubSubTask = rospy.Publisher('/controller/sub_task', Int64, queue_size=1)
         self.lockTrajectory = threading.Lock()
         self.maxDeviation = np.array([0.015, 0.25, 0.015, 0.25])*2
+        self.auto_mode = True
+        rospy.Subscriber("/yumi/rws/system_states", SystemState, self.callback_system_state, queue_size=3, tcp_nodelay=True)
+        self.restart_rapid = rospy.ServiceProxy('/yumi/rws/start_rapid', TriggerWithResultCode)
+
+    def callback_system_state(self, data):
+        auto_mode = data.auto_mode
+
+        if not self.auto_mode and auto_mode:
+            self.reset_trajectory()
+            self.restart_rapid()
+            print('trajectory reset')
+
+        self.auto_mode = auto_mode
+
+    def reset_trajectory(self):
+        self.lockTrajectory.acquire()
+        self.controlTarget = ControlTarget(Parameters.dT)
+        self.lockTrajectory.release()
 
     def policy(self):
         """Gets called for each time step and calculates the target velocity"""
-        
+        if self.auto_mode == False:
+            action = dict()  # used to store the desired action
+            action['controlSpace'] = 'jointSpace'
+            action['jointVelocities'] = np.zeros(Parameters.Dof)
+            #print('control loop off')
+            return
+
         # Update the pose for controlTarget class
         self.lockTrajectory.acquire()
 
