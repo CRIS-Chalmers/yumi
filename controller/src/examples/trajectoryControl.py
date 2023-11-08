@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Controller.controller import YumiController
 from Controller.controlTarget import ControlTarget
 from parameters import Parameters
-from yumi_controller.msg import Trajectory_msg
+from controller.msg import Trajectory_msg
 from abb_robot_msgs.msg import SystemState
 from abb_robot_msgs.srv import TriggerWithResultCode
 
