@@ -70,7 +70,7 @@ rosrun controller yumi_simulator.py
 ```
 ### Using hardware:
 warning: this activates EGM and joint controllers and also closes EGM and rapid when set_yumi_settings_and_start.py 
-is closed (In our lab, Ip: 192.168.125.1) (read wiki before attempting this)
+is closed (In our lab, Ip: 192.168.125.1) (read wiki before attempting this) Also, don't forget to change velocity limits in ABB driver, abb_robot_driver/abb_robot_bringup_examples/config/ex3_hardware_egm.yaml.
 ```
 roslaunch abb_robot_bringup_examples ex3_rws_and_egm_yumi_robot.launch robot_ip:=<robot controller's IP address> 
 rosrun controller set_yumi_settings_and_start.py
