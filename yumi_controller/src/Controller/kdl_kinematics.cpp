@@ -183,7 +183,7 @@ Calc_jacobian::Calc_jacobian(ros::NodeHandle *nh ){
     joint_state_sub = nh->subscribe("/yumi/egm/joint_states", 2, &Calc_jacobian::callback, this);
     egm_state_sub = nh->subscribe("/yumi/egm/egm_states", 2, &Calc_jacobian::callback_egm_state, this);
 
-    jacobian_pub = nh->advertise<controller::Kinematics_msg>("/Jacobian_R_L", 1);
+    jacobian_pub = nh->advertise<yumi_controller::Kinematics_msg>("/Jacobian_R_L", 1);
     joint_states_pub = nh->advertise<sensor_msgs::JointState>("/joint_states", 1);
     velocity_pub = nh->advertise<std_msgs::Float64MultiArray>("/yumi/egm/joint_group_velocity_controller/command", 1);
 
@@ -302,7 +302,7 @@ void Calc_jacobian::update(){
     }
 
     // --------------------- Jacobians --------------------------------------------------
-    controller::Kinematics_msg kinematics_msg;
+    yumi_controller::Kinematics_msg kinematics_msg;
     // send joint position 
     kinematics_msg.jointPosition = joint_state;
     kinematics_msg.jointVelocity = joint_velocity;
