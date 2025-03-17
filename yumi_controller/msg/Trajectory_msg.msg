@@ -1,5 +1,5 @@
 std_msgs/Header header
 
-controller/Trajectory_point[] trajectory
+yumi_controller/Trajectory_point[] trajectory
 string mode
 
