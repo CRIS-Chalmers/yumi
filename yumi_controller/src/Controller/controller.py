@@ -1,7 +1,7 @@
 
 import rospy
 from std_msgs.msg import Float64MultiArray
-from controller.msg import Kinematics_msg
+from yumi_controller.msg import Kinematics_msg
 import numpy as np
 import tf
 import threading

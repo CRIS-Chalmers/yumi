@@ -209,7 +209,7 @@ class HoldOrientation(object):
 
 def main():
     # starting ROS node and subscribers
-    rospy.init_node('trajectoryController', anonymous=True)
+    rospy.init_node('vlaController', anonymous=True)
 
     ymuiContoller = Controller()
 
