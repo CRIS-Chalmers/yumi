@@ -62,6 +62,7 @@ add_message_files(
   Trajectory_msg.msg
   CartesianVelocityControl_msg.msg
   PositionAndVelocity_msg.msg
+  DeltaVLA_msg.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -174,6 +175,7 @@ include_directories(
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
   src/examples/trajectoryControl.py   
+  src/examples/controlVLA.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   )
 
@@ -203,6 +205,7 @@ catkin_install_python(PROGRAMS
 install(FILES
   base.launch
   yumiTrajectoryControl.launch
+  vla_yumi.launch
   # myfile2
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )

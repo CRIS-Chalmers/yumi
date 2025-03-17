@@ -1,5 +1,0 @@
-<launch>
-<include file="$(find yumi_description)/launch/display.launch" />
-<node name="kdl_kinematics" type="kdl_kinematics" pkg="controller" />
-<node name="trajectoryController" type="trajectoryControl.py" pkg="controller" output="screen"/>
-</launch>

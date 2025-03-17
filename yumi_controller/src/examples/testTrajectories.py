@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import rospy
-from controller.msg import Trajectory_point, Trajectory_msg
+from yumi_controller.msg import Trajectory_point, Trajectory_msg
 import tf
 import numpy as np
 
