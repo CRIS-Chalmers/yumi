@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(controller)
+project(yumi_controller)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -225,6 +225,6 @@ install(FILES
 
 add_executable(kdl_kinematics src/Controller/kdl_kinematics.cpp)
 target_link_libraries(kdl_kinematics ${catkin_LIBRARIES})
-add_dependencies(kdl_kinematics controller_generate_messages_cpp)
+add_dependencies(kdl_kinematics yumi_controller_generate_messages_cpp)
 
 
